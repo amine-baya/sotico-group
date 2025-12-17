@@ -2,6 +2,7 @@ import Image from "next/image";
 import { FaSearch } from "react-icons/fa";
 import { SlBasket } from "react-icons/sl";
 import Header from "./components/Header";
+import Link from "next/link";
 export default function Home() {
 
   const logoImages = [
@@ -14,7 +15,7 @@ export default function Home() {
   return (
     <div>
       {/* HERO SECTION */}
-      <Header/>
+      <Header />
       <section className="py-16 bg-white">
         <h2 className="text-4xl font-bold text-center mb-10 text-gray-800">
           Trusted by Leading Companies
@@ -54,43 +55,57 @@ export default function Home() {
       <div className="p-4">
         <h2 className="mx-auto text-5xl font-bold text-center my-8">Category</h2>
 
-        {/* First row */}
+        {/* First row (2 items) */}
         <div className="grid grid-cols-2 gap-4">
-          {[1, 2].map((item) => (
-            <div key={item} className="relative w-full aspect-4/3">
+          {[
+            { name: 'Construction', slug: 'Construction', img: '/cat-const.jpg' },
+            { name: 'Tennis', slug: 'Tennis', img: '/cat-tennis.jpg' }
+          ].map((cat, index) => (
+            <Link
+              href={`/products?category=${cat.slug}`}
+              key={index}
+              className="relative w-full aspect-4/3 group cursor-pointer"
+            >
               <Image
-                src="/cat-const.jpg"
-                alt="Construction"
+                src={cat.img}
+                alt={cat.name}
                 fill
                 className="object-cover rounded-xl"
               />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 rounded-xl">
-                <span className="block text-xl font-semibold mb-3">Construction</span>
-                <button className="px-6 py-2 border-2 border-amber-100 hover:bg-amber-100 hover:text-black transition">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 rounded-xl transition-all group-hover:bg-black/50">
+                <span className="block text-xl font-semibold mb-3">{cat.name}</span>
+                <div className="px-6 py-2 border-2 border-amber-100 group-hover:bg-amber-100 group-hover:text-black transition">
                   See more
-                </button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
-        {/* Second row */}
         <div className="grid grid-cols-3 gap-4 mt-6">
-          {[1, 2, 3].map((item) => (
-            <div key={item} className="relative w-full aspect-4/3">
+          {[
+            { name: 'Industrial', slug: 'Industrial', img: '/cat-const.jpg' },
+            { name: 'Safety', slug: 'Safety', img: '/cat-safety.jpg' },
+            { name: 'Other', slug: 'Other', img: '/cat-const.jpg' }
+          ].map((cat, index) => (
+            <Link
+              href={`/products?category=${cat.slug}`}
+              key={index}
+              className="relative w-full aspect-4/3 group cursor-pointer"
+            >
               <Image
-                src="/cat-const.jpg"
-                alt="Construction"
+                src={cat.img}
+                alt={cat.name}
                 fill
                 className="object-cover rounded-xl"
               />
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 rounded-xl">
-                <span className="block text-xl font-semibold mb-3">Construction</span>
-                <button className="px-6 py-2 border-2 border-amber-100 hover:bg-amber-100 hover:text-black transition">
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 rounded-xl transition-all group-hover:bg-black/50">
+                <span className="block text-xl font-semibold mb-3">{cat.name}</span>
+                <div className="px-6 py-2 border-2 border-amber-100 group-hover:bg-amber-100 group-hover:text-black transition">
                   See more
-                </button>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
