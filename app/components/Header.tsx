@@ -57,13 +57,14 @@ function Header() {
             </nav>
 
 
-            {/* Image AFTER the navbar */}
-            <div className="w-full h-[70vh] relative">
+            {/* Hero section */}
+            <div className="relative h-screen w-full">
                 <Image
-                    src="/backg.jpg"
+                    src="/boots.png"
                     alt="Construction"
-                    layout="fill" // For Next.js 12/13 <Image>, use fill positioning in a parent with relative and explicit height
-                    className="object-cover"
+                    fill
+                    priority
+                    className="object-cover object-center scale-98"
                 />
             </div>
         </div>
