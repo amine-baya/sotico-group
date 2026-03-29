@@ -17,7 +17,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
-import { homeCategories } from "../home/home-content";
+import { certificates, homeCategories } from "../home/home-content";
 
 export function NavigationMenuDemo() {
   return (
@@ -54,7 +54,35 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
 
         <MenuPlaceholder label="PPE" />
-        <MenuPlaceholder label="Normes" />
+        <NavigationMenuItem>
+          <NavigationMenuTrigger className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition">
+            Normes
+          </NavigationMenuTrigger>
+          <NavigationMenuContent className="px-6 md:px-10">
+            <ul className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 py-6 md:grid-cols-3">
+              {certificates.map((certificate) => (
+                <li key={certificate.slug}>
+                  <Link
+                    href={`/certificates/${certificate.slug}`}
+                    className="group block rounded-2xl border border-slate-200 bg-white p-4 text-center transition hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <div className="relative mx-auto mb-4 flex aspect-[4/3] w-full max-w-[220px] items-center justify-center overflow-hidden rounded-xl bg-slate-50">
+                      <Image
+                        src={certificate.imageSrc}
+                        alt={certificate.title}
+                        fill
+                        className="object-contain p-6"
+                      />
+                    </div>
+                    <h3 className="text-lg font-bold tracking-[0.14em] text-[#0c437c]">
+                      {certificate.title}
+                    </h3>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
 
         <NavigationMenuItem>
           <NavigationMenuLink>
