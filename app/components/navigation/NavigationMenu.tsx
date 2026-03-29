@@ -38,8 +38,8 @@ export function NavigationMenuDemo() {
           <NavigationMenuTrigger className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition">
             Workwear
           </NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[1500px] grid-cols-[repeat(auto-fit,250px)] justify-center gap-6 py-4">
+          <NavigationMenuContent className="px-6 md:px-10">
+            <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 py-4 lg:grid-cols-5">
               {homeCategories.map((category) => (
                 <NavigationCategoryItem
                   key={category.title}
@@ -86,7 +86,7 @@ function NavigationCategoryItem({
 }: NavigationCategoryItemProps) {
   return (
     <li className="flex justify-center">
-      <div className="w-[250px]">
+      <div className="w-full max-w-[250px]">
         <Image
           src={src}
           alt={title}
