@@ -172,6 +172,48 @@ export const translations = {
       backHome: "Back to home",
       pdfTitleSuffix: "certificate PDF",
     },
+    aboutPage: {
+      eyebrow: "Who We Are",
+      title: "Building professional wear with heritage, precision, and trust.",
+      intro:
+        "Sotico combines decades of manufacturing expertise with a constant focus on quality, safety, and long-term partnerships.",
+      storyTitle: "Our Story",
+      timelineTitle: "Key Milestones",
+      timelineIntro:
+        "A quick look at the moments that shaped the company and its growth.",
+      timeline: [
+        {
+          year: "1982",
+          title: "Company founded",
+          description:
+            "Sotico begins as a family business with a clear mission: manufacture reliable professional clothing in Tunisia.",
+        },
+        {
+          year: "1995",
+          title: "Industrial expansion",
+          description:
+            "Production capacity grows to serve more healthcare, industrial, and service-sector clients.",
+        },
+        {
+          year: "2008",
+          title: "Quality structuring",
+          description:
+            "The company reinforces its quality systems and operational processes to meet stricter professional standards.",
+        },
+        {
+          year: "2020",
+          title: "Modern product development",
+          description:
+            "Sotico expands its collections with more technical, durable, and design-conscious workwear solutions.",
+        },
+        {
+          year: "Today",
+          title: "Trusted regional partner",
+          description:
+            "The company continues to serve professionals with certified quality, tailored service, and long-term reliability.",
+        },
+      ],
+    },
     products: {
       catalogueTitle: "Our Catalogue",
       catalogueSubtitle: "Manage your workwear collection",
@@ -391,6 +433,49 @@ export const translations = {
       label: "Certificat",
       backHome: "Retour à l'accueil",
       pdfTitleSuffix: "PDF du certificat",
+    },
+    aboutPage: {
+      eyebrow: "Qui sommes-nous",
+      title:
+        "Créer des vêtements professionnels avec héritage, précision et confiance.",
+      intro:
+        "Sotico associe des décennies de savoir-faire industriel à une exigence constante de qualité, de sécurité et de partenariat durable.",
+      storyTitle: "Notre histoire",
+      timelineTitle: "Étapes clés",
+      timelineIntro:
+        "Un aperçu des moments essentiels qui ont marqué l'entreprise et sa croissance.",
+      timeline: [
+        {
+          year: "1982",
+          title: "Création de l'entreprise",
+          description:
+            "Sotico naît comme entreprise familiale avec une mission claire : fabriquer en Tunisie des vêtements professionnels fiables.",
+        },
+        {
+          year: "1995",
+          title: "Expansion industrielle",
+          description:
+            "La capacité de production augmente pour répondre à davantage de clients des secteurs santé, industrie et services.",
+        },
+        {
+          year: "2008",
+          title: "Structuration qualité",
+          description:
+            "L'entreprise renforce ses systèmes qualité et ses processus afin de répondre à des standards professionnels plus exigeants.",
+        },
+        {
+          year: "2020",
+          title: "Développement produit moderne",
+          description:
+            "Sotico élargit ses collections avec des solutions de workwear plus techniques, durables et soignées.",
+        },
+        {
+          year: "Aujourd'hui",
+          title: "Partenaire régional de confiance",
+          description:
+            "L'entreprise accompagne toujours les professionnels avec une qualité certifiée, un service sur mesure et une fiabilité durable.",
+        },
+      ],
     },
     products: {
       catalogueTitle: "Notre catalogue",

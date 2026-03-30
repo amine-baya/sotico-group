@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { useLanguage } from "../providers/LanguageProvider";
 
@@ -34,9 +35,12 @@ export default function AboutSection() {
           <p className="leading-relaxed text-gray-600">
             {t.home.about.paragraphTwo}
           </p>
-          <button className="rounded-full bg-[#0D427D] px-8 py-3 font-semibold text-white shadow transition hover:bg-amber-600">
+          <Link
+            href="/about"
+            className="inline-flex rounded-full bg-[#0D427D] px-8 py-3 font-semibold text-white shadow transition hover:bg-amber-600"
+          >
             {t.home.about.cta}
-          </button>
+          </Link>
         </div>
       </div>
 
