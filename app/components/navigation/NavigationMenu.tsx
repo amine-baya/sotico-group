@@ -17,9 +17,12 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
-import { certificates, homeCategories } from "../home/home-content";
+import { useLanguage } from "../providers/LanguageProvider";
+import { certificates } from "../home/home-content";
 
 export function NavigationMenuDemo() {
+  const { t } = useLanguage();
+
   return (
     <NavigationMenu>
       <NavigationMenuList className="flex justify-center gap-14">
@@ -29,18 +32,18 @@ export function NavigationMenuDemo() {
               href="/#about-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
             >
-              About Us
+              {t.navigation.aboutUs}
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
 
         <NavigationMenuItem>
           <NavigationMenuTrigger className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition">
-            Workwear
+            {t.navigation.workwear}
           </NavigationMenuTrigger>
           <NavigationMenuContent className="px-6 md:px-10">
             <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 py-4 lg:grid-cols-5">
-              {homeCategories.map((category) => (
+              {t.home.categories.map((category) => (
                 <NavigationCategoryItem
                   key={category.title}
                   href={category.href}
@@ -53,10 +56,11 @@ export function NavigationMenuDemo() {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        <MenuPlaceholder label="PPE" />
+        <MenuPlaceholder label={t.navigation.ppe} />
+
         <NavigationMenuItem>
           <NavigationMenuTrigger className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition">
-            Normes
+            {t.navigation.standards}
           </NavigationMenuTrigger>
           <NavigationMenuContent className="px-6 md:px-10">
             <ul className="mx-auto grid w-full max-w-4xl grid-cols-1 gap-6 py-6 md:grid-cols-3">
@@ -90,7 +94,7 @@ export function NavigationMenuDemo() {
               href="/#contact-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
             >
-              Contact Us
+              {t.navigation.contactUs}
             </Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
@@ -141,6 +145,8 @@ function NavigationCategoryItem({
 }
 
 function MenuPlaceholder({ label }: { label: string }) {
+  const { t } = useLanguage();
+
   return (
     <NavigationMenuItem>
       <NavigationMenuTrigger className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition">
@@ -153,7 +159,7 @@ function MenuPlaceholder({ label }: { label: string }) {
               render={
                 <Link href="#" className="flex-row items-center gap-2">
                   <CircleAlertIcon />
-                  Backlog
+                  {t.navigation.backlog}
                 </Link>
               }
             />
@@ -161,7 +167,7 @@ function MenuPlaceholder({ label }: { label: string }) {
               render={
                 <Link href="#" className="flex-row items-center gap-2">
                   <CircleDashedIcon />
-                  To Do
+                  {t.navigation.todo}
                 </Link>
               }
             />
@@ -169,7 +175,7 @@ function MenuPlaceholder({ label }: { label: string }) {
               render={
                 <Link href="#" className="flex-row items-center gap-2">
                   <CircleCheckIcon />
-                  Done
+                  {t.navigation.done}
                 </Link>
               }
             />

@@ -1,13 +1,17 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
-import { homeCategories } from "./home-content";
+import { useLanguage } from "../providers/LanguageProvider";
 
 export default function CategoryGrid() {
+  const { t } = useLanguage();
+
   return (
     <section className="px-4 py-6">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {homeCategories.map((category) => (
+        {t.home.categories.map((category) => (
           <Link
             key={category.title}
             href={category.href}
@@ -30,7 +34,7 @@ export default function CategoryGrid() {
                     {category.description}
                   </h2>
                   <span className="inline-flex rounded-full border border-amber-100 px-5 py-2 text-sm font-semibold text-white transition group-hover:bg-amber-100 group-hover:text-slate-900">
-                    See more
+                    {t.home.categoryCta}
                   </span>
                 </div>
               </div>

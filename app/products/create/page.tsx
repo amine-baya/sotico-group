@@ -1,137 +1,162 @@
-"use client"
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
-import Link from 'next/link';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import Link from "next/link";
+
+import { useLanguage } from "@/app/components/providers/LanguageProvider";
 
 export default function CreateProduct() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [file, setFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    category: 'Construction',
-    description: '' // Déjà initialisé dans votre état [cite: 83]
+    name: "",
+    price: "",
+    category: "Construction",
+    description: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleChange = (
+    event: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setFile(e.target.files[0]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setFile(event.target.files[0]);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Utilisation de FormData pour gérer les fichiers et le texte [cite: 90]
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
     const data = new FormData();
-    data.append('name', formData.name);
-    data.append('price', formData.price);
-    data.append('category', formData.category);
-    data.append('description', formData.description); // Envoi de la description au backend
-    if (file) data.append('image', file); 
+    data.append("name", formData.name);
+    data.append("price", formData.price);
+    data.append("category", formData.category);
+    data.append("description", formData.description);
+
+    if (file) {
+      data.append("image", file);
+    }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/products', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/products",
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
 
       if (response.status === 201) {
-        alert("Produit créé avec succès !");
-        router.push('/products');
+        alert(t.products.create.success);
+        router.push("/products");
       }
-    } catch (error: any) {
-      console.error("Erreur lors de l'envoi:", error);
-      alert("Erreur lors de la création du produit");
+    } catch (error: unknown) {
+      console.error(t.products.create.error, error);
+      alert(t.products.create.error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4">
-      <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-800">Add New Product</h1>
-          <Link href="/products" className="text-sm text-gray-500 hover:underline">Back</Link>
+    <div className="min-h-screen bg-gray-50 px-4 py-12">
+      <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-sm">
+        <div className="mb-8 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">
+            {t.products.create.title}
+          </h1>
+          <Link href="/products" className="text-sm text-gray-500 hover:underline">
+            {t.products.create.back}
+          </Link>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6 text-black">
-          {/* Nom du produit */}
           <div>
-            <label className="block text-sm font-medium mb-2">Product Name</label>
-            <input 
-              type="text" 
-              name="name" 
-              required 
-              className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-              placeholder="Ex: Combinaison de protection"
-              onChange={handleChange} 
+            <label className="mb-2 block text-sm font-medium">
+              {t.products.create.name}
+            </label>
+            <input
+              type="text"
+              name="name"
+              required
+              className="w-full rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t.products.create.placeholders.name}
+              onChange={handleChange}
             />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
-            {/* Prix */}
             <div>
-              <label className="block text-sm font-medium mb-2">Price (TND)</label>
-              <input 
-                type="text" 
-                name="price" 
-                required 
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
-                placeholder="0.00"
-                onChange={handleChange} 
+              <label className="mb-2 block text-sm font-medium">
+                {t.products.create.price}
+              </label>
+              <input
+                type="text"
+                name="price"
+                required
+                className="w-full rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder={t.products.create.placeholders.price}
+                onChange={handleChange}
               />
             </div>
-            {/* Catégorie */}
+
             <div>
-              <label className="block text-sm font-medium mb-2">Category</label>
-              <select 
-                name="category" 
-                className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" 
+              <label className="mb-2 block text-sm font-medium">
+                {t.products.create.category}
+              </label>
+              <select
+                name="category"
+                className="w-full rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
                 onChange={handleChange}
               >
-                <option value="Construction">Construction</option>
-                <option value="Tennis">Tennis</option>
-                <option value="Industrial">Industrial</option>
-                <option value="Safety">Safety</option>
-                <option value="Other">Other</option>
+                {t.products.categories
+                  .filter((item) => item.value !== "All")
+                  .map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
 
-          {/* AJOUT : Champ Description */}
           <div>
-            <label className="block text-sm font-medium mb-2">Description</label>
+            <label className="mb-2 block text-sm font-medium">
+              {t.products.create.description}
+            </label>
             <textarea
               name="description"
               rows={4}
-              className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
-              placeholder="Détails sur la tenue (matière, durabilité, usage...)"
+              className="w-full rounded-xl border px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder={t.products.create.placeholders.description}
               onChange={handleChange}
-            ></textarea>
-          </div>
-
-          {/* Image du produit */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-            <input 
-              type="file" 
-              accept="image/*" 
-              onChange={handleFileChange} 
-              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+          <div>
+            <label className="mb-2 block text-sm font-medium text-gray-700">
+              {t.products.create.image}
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full cursor-pointer text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-blue-700 hover:file:bg-blue-100"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white shadow-lg shadow-blue-200 transition-colors hover:bg-blue-700"
           >
-            Create Product
+            {t.products.create.submit}
           </button>
         </form>
       </div>

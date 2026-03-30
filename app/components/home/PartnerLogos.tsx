@@ -1,12 +1,17 @@
+"use client";
+
 import Image from "next/image";
 
+import { useLanguage } from "../providers/LanguageProvider";
 import { partnerLogos } from "./home-content";
 
 export default function PartnerLogos() {
+  const { t } = useLanguage();
+
   return (
     <section className="bg-white py-16">
       <h2 className="mb-10 text-center text-4xl font-bold text-gray-800">
-        Trusted by Leading Companies
+        {t.home.partnerTitle}
       </h2>
 
       <div className="fade-mask relative mx-auto max-w-7xl overflow-hidden">

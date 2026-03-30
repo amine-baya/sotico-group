@@ -1,6 +1,12 @@
+"use client";
+
 import Image from "next/image";
 
+import { useLanguage } from "../providers/LanguageProvider";
+
 export default function AboutSection() {
+  const { t } = useLanguage();
+
   return (
     <section
       id="about-section"
@@ -19,22 +25,17 @@ export default function AboutSection() {
 
         <div className="space-y-6">
           <h2 className="text-4xl font-bold text-gray-800 md:text-5xl">
-            About <span className="text-[#0D427D]">Sotico</span>
+            {t.home.about.titlePrefix}{" "}
+            <span className="text-[#0D427D]">{t.home.about.titleAccent}</span>
           </h2>
           <p className="text-lg leading-relaxed text-gray-600">
-            At <strong>Sotico</strong>, we design and craft professional uniforms
-            that bring comfort, safety, and confidence to every worker. From
-            construction sites to workshops, we believe that quality work starts
-            with quality wear.
+            {t.home.about.paragraphOne}
           </p>
           <p className="leading-relaxed text-gray-600">
-            Our mission is to blend durability, functionality, and modern style
-            because we know that good design can empower productivity. Every
-            fabric we choose and every stitch we make reflects our passion for
-            excellence.
+            {t.home.about.paragraphTwo}
           </p>
           <button className="rounded-full bg-[#0D427D] px-8 py-3 font-semibold text-white shadow transition hover:bg-amber-600">
-            Learn More
+            {t.home.about.cta}
           </button>
         </div>
       </div>

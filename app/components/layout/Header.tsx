@@ -1,19 +1,26 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { FaSearch } from "react-icons/fa";
 import { SlBasket } from "react-icons/sl";
 
+import { useLanguage } from "../providers/LanguageProvider";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { NavigationMenuDemo } from "../navigation/NavigationMenu";
 
 export default function Header() {
+  const { t } = useLanguage();
+
   return (
     <div className="relative">
       <nav className="fixed left-0 top-0 z-50 w-full bg-white shadow-sm">
         <div className="w-full border-b border-slate-100 bg-slate-50 py-2">
-          <div className="mx-auto max-w-7xl px-8 text-center">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-8">
             <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">
-              Vêtements industriels et professionnels haut de gamme
+              {t.header.topBanner}
             </p>
+            <LanguageSwitcher />
           </div>
         </div>
 
@@ -45,26 +52,26 @@ export default function Header() {
           <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-8 text-center md:grid-cols-3">
             <div>
               <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-                FREE SHIPPING
+                {t.header.promoShippingTitle}
               </p>
               <p className="text-s underline underline-offset-4">
-                On all orders over £75 *
+                {t.header.promoShippingText}
               </p>
             </div>
             <div className="border-white/10 md:border-x">
               <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-                28 DAY RETURNS*
+                {t.header.promoReturnsTitle}
               </p>
               <p className="text-s underline underline-offset-4">
-                Free Within 14 Days *
+                {t.header.promoReturnsText}
               </p>
             </div>
             <div>
               <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-                FREE LOGO SET-UP
+                {t.header.promoLogoTitle}
               </p>
               <p className="text-s underline underline-offset-4">
-                Embroidery &amp; Transfers
+                {t.header.promoLogoText}
               </p>
             </div>
           </div>
@@ -80,7 +87,7 @@ export default function Header() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className="h-full w-full object-cover"
-                alt="Montage of three professionals in Sotico uniforms."
+                alt={t.header.heroImageAlt}
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyGv9ZF64nFYFvzBixhs__AHwhrcLuXgoFBsO5cW4vjgpD5CtUxA-drguHiBtwK__0W6thwFwXYrVrYeXvz51MvpxMA4PEKB-wbdkEpC8ZDhrMWCPZco5beJEKutOBce4CWk0i58o3ZAwRJ1hFtT801SohhWnRg_y0NWnWLOBQ-jtEqDMJYq8r2M45SAc4uXhs1wgAsVsmw73qYEJG91R7iltat_2xb6gs1_aQRlxB8VGs-xaX2WL2CG0Tl_E2Xsa0CNMrgzaNzxc"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent lg:from-background lg:via-background/40" />
@@ -92,33 +99,33 @@ export default function Header() {
             <div className="grid grid-cols-1 items-center lg:grid-cols-12">
               <div className="lg:col-span-6">
                 <p className="mb-4 text-sm font-bold tracking-[0.2em] text-[#0c437c]">
-                  SOTICO GROUP
+                  {t.header.heroEyebrow}
                 </p>
                 <h1 className="mb-8 text-4xl font-extrabold leading-[1.05] tracking-tight text-[#0c437c] md:text-6xl lg:text-7xl">
-                  UNE GRANDE MARQUE POUR LES PROFESSIONNELS
+                  {t.header.heroTitle}
                 </h1>
                 <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                   <Link
                     href="/products"
                     className="editorial-gradient flex items-center justify-between rounded-md bg-[#0c437c] px-8 py-4 font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/20"
                   >
-                    <span>DÉCOUVREZ NOTRE CATALOGUE</span>
+                    <span>{t.header.heroPrimaryCta}</span>
                     <span className="ml-4">→</span>
                   </Link>
                   <button
                     className="rounded-md bg-[#aebebb] px-8 py-4 font-semibold text-white transition-colors hover:bg-slate-500"
                     type="button"
                   >
-                    SUR MESURE
+                    {t.header.heroSecondaryCta}
                   </button>
                 </div>
 
                 <div className="mt-12 inline-block rounded-xl border border-outline-variant/10 bg-surface-container-lowest p-6 shadow-xl">
                   <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
-                    Qualité Certifiée
+                    {t.header.qualityTitle}
                   </p>
                   <p className="text-sm font-medium text-on-surface-variant">
-                    Standard Européen ISO 9001
+                    {t.header.qualityText}
                   </p>
                 </div>
               </div>
