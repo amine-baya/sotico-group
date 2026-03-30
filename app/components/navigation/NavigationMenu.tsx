@@ -17,11 +17,13 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
+import { getShowcaseCategories } from "../catalog/showcase-data";
 import { useLanguage } from "../providers/LanguageProvider";
 import { certificates } from "../home/home-content";
 
 export function NavigationMenuDemo() {
   const { t } = useLanguage();
+  const showcaseCategories = getShowcaseCategories();
 
   return (
     <NavigationMenu>
@@ -43,12 +45,15 @@ export function NavigationMenuDemo() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="px-6 md:px-10">
             <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 py-4 lg:grid-cols-5">
-              {t.home.categories.map((category) => (
+              {showcaseCategories.map((category) => (
                 <NavigationCategoryItem
-                  key={category.title}
-                  href={category.href}
-                  src={category.src}
-                  subCategories={category.subCategories}
+                  key={category.slug}
+                  categorySlug={category.slug}
+                  src={category.image}
+                  subCategories={category.subcategories.map((subcategory) => ({
+                    index: subcategory.index,
+                    title: subcategory.title,
+                  }))}
                   title={category.title}
                 />
               ))}
@@ -104,39 +109,50 @@ export function NavigationMenuDemo() {
 }
 
 type NavigationCategoryItemProps = {
-  title: string;
-  href: string;
+  title: {
+    en: string;
+    fr: string;
+  };
+  categorySlug: string;
   src: string;
-  subCategories: string[];
+  subCategories: Array<{
+    index: number;
+    title: {
+      en: string;
+      fr: string;
+    };
+  }>;
 };
 
 function NavigationCategoryItem({
   title,
-  href,
+  categorySlug,
   src,
   subCategories,
 }: NavigationCategoryItemProps) {
+  const { locale } = useLanguage();
+
   return (
     <li className="flex justify-center">
       <div className="w-full max-w-[250px]">
         <Image
           src={src}
-          alt={title}
+          alt={title[locale]}
           width={250}
           height={100}
           className="h-40 rounded-md transition-transform duration-300 ease-in-out"
         />
 
         <h3 className="mt-3 font-bold tracking-[0.2em] text-[#0c437c]">
-          {title}
+          {title[locale]}
         </h3>
         {subCategories.map((subCategory) => (
           <Link
-            key={subCategory}
-            href={href}
+            key={subCategory.index}
+            href={`/collections/${categorySlug}?sub=${subCategory.index}`}
             className="mt-2 block text-[18px] font-semibold capitalize tracking-[0.1] text-[#18599f]"
           >
-            {subCategory}
+            {subCategory.title[locale]}
           </Link>
         ))}
       </div>

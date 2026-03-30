@@ -214,6 +214,16 @@ export const translations = {
         },
       ],
     },
+    showcase: {
+      titlePrefix: "Collection",
+      subcategoryLabel: "Subcategory",
+      productsLabel: "Products",
+      colorLabel: "Colors",
+      sizesLabel: "Available sizes",
+      detailsCta: "View product",
+      backToCollections: "Back to collections",
+      relatedLabel: "Selected collection",
+    },
     products: {
       catalogueTitle: "Our Catalogue",
       catalogueSubtitle: "Manage your workwear collection",
@@ -476,6 +486,16 @@ export const translations = {
             "L'entreprise accompagne toujours les professionnels avec une qualité certifiée, un service sur mesure et une fiabilité durable.",
         },
       ],
+    },
+    showcase: {
+      titlePrefix: "Collection",
+      subcategoryLabel: "Sous-catégorie",
+      productsLabel: "Produits",
+      colorLabel: "Couleurs",
+      sizesLabel: "Tailles disponibles",
+      detailsCta: "Voir le produit",
+      backToCollections: "Retour aux collections",
+      relatedLabel: "Collection sélectionnée",
     },
     products: {
       catalogueTitle: "Notre catalogue",
