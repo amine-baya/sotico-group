@@ -1,6 +1,9 @@
 export default function ContactSection() {
   return (
-    <section className="bg-[#f3f4f6] py-24">
+    <section
+      id="contact-section"
+      className="scroll-mt-56 bg-[#f3f4f6] py-24"
+    >
       <div className="mx-auto max-w-7xl bg-white px-8 py-12">
         <div className="mb-16 flex items-center gap-6">
           <div className="h-12 w-1 bg-amber-500" />

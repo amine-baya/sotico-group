@@ -2,7 +2,10 @@ import Image from "next/image";
 
 export default function AboutSection() {
   return (
-    <section className="relative mt-16 overflow-hidden bg-gradient-to-br from-gray-100 via-white to-gray-200 py-16">
+    <section
+      id="about-section"
+      className="relative mt-16 scroll-mt-56 overflow-hidden bg-gradient-to-br from-gray-100 via-white to-gray-200 py-16"
+    >
       <div className="container mx-auto grid items-center gap-12 px-6 md:grid-cols-2">
         <div className="relative h-[400px] w-full overflow-hidden rounded-2xl shadow-lg">
           <Image

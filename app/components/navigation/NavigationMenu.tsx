@@ -26,7 +26,7 @@ export function NavigationMenuDemo() {
         <NavigationMenuItem>
           <NavigationMenuLink>
             <Link
-              href="#"
+              href="/#about-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
             >
               About Us
@@ -87,7 +87,7 @@ export function NavigationMenuDemo() {
         <NavigationMenuItem>
           <NavigationMenuLink>
             <Link
-              href="#"
+              href="/#contact-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
             >
               Contact Us
