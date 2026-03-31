@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 import { useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 import SiteFooter from "@/app/components/home/SiteFooter";
 import SiteHeaderBar from "@/app/components/layout/SiteHeaderBar";
@@ -25,31 +26,46 @@ export default function ShowcaseProductPage() {
   const [selectedSize, setSelectedSize] = useState(
     productView.product.sizes[0] ?? ""
   );
-  const [selectedImage, setSelectedImage] = useState(
-    productView.product.gallery[0] ?? productView.product.image
-  );
-  const [zoomStyle, setZoomStyle] = useState({
-    transformOrigin: "50% 50%",
-    transform: "scale(1)",
-  });
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+  const selectedImage =
+    productView.product.gallery[selectedImageIndex] ?? productView.product.image;
 
-  const handleImageMove = (event: React.MouseEvent<HTMLDivElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
-    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-
-    setZoomStyle({
-      transformOrigin: `${x}% ${y}%`,
-      transform: "scale(2.1)",
-    });
+  const openGalleryAt = (index: number) => {
+    setSelectedImageIndex(index);
+    setIsGalleryOpen(true);
   };
 
-  const resetZoom = () => {
-    setZoomStyle({
-      transformOrigin: "50% 50%",
-      transform: "scale(1)",
-    });
+  const showPreviousImage = () => {
+    setSelectedImageIndex((current) =>
+      current === 0 ? productView.product.gallery.length - 1 : current - 1
+    );
   };
+
+  const showNextImage = () => {
+    setSelectedImageIndex((current) =>
+      current === productView.product.gallery.length - 1 ? 0 : current + 1
+    );
+  };
+
+  const handleGalleryKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft") {
+      showPreviousImage();
+    }
+
+    if (event.key === "ArrowRight") {
+      showNextImage();
+    }
+
+    if (event.key === "Escape") {
+      setIsGalleryOpen(false);
+    }
+  };
+
+  const galleryImages =
+    productView.product.gallery.length > 0
+      ? productView.product.gallery
+      : [productView.product.image];
 
   return (
     <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
@@ -67,14 +83,14 @@ export default function ShowcaseProductPage() {
           <div className="grid gap-10 rounded-[2rem] bg-white p-8 shadow-sm lg:grid-cols-[1fr_0.95fr]">
             <div className="grid gap-4 md:grid-cols-[96px_1fr]">
               <div className="order-2 flex gap-3 md:order-1 md:flex-col">
-                {productView.product.gallery.map((image, index) => (
+                {galleryImages.map((image, index) => (
                   <button
                     key={`${image}-${index}`}
                     type="button"
-                    onClick={() => setSelectedImage(image)}
+                    onClick={() => setSelectedImageIndex(index)}
                     className={[
                       "relative h-24 w-24 overflow-hidden rounded-2xl border-2 bg-slate-100 transition",
-                      selectedImage === image
+                      selectedImageIndex === index
                         ? "border-[#0c437c] shadow-md"
                         : "border-transparent hover:border-slate-300",
                     ].join(" ")}
@@ -89,19 +105,18 @@ export default function ShowcaseProductPage() {
                 ))}
               </div>
 
-              <div
+              <button
+                type="button"
+                onClick={() => openGalleryAt(selectedImageIndex)}
                 className="relative order-1 min-h-[520px] overflow-hidden rounded-[1.75rem] bg-slate-100 md:order-2"
-                onMouseMove={handleImageMove}
-                onMouseLeave={resetZoom}
               >
                 <Image
                   src={selectedImage}
                   alt={productView.product.title}
                   fill
-                  className="object-cover transition-transform duration-200 ease-out"
-                  style={zoomStyle}
+                  className="object-cover transition duration-300 hover:scale-[1.03]"
                 />
-              </div>
+              </button>
             </div>
 
             <div className="space-y-8">
@@ -199,6 +214,70 @@ export default function ShowcaseProductPage() {
           </div>
         </div>
       </section>
+
+      {isGalleryOpen ? (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/92 p-6"
+          onKeyDown={handleGalleryKeyDown}
+          tabIndex={0}
+        >
+          <button
+            type="button"
+            onClick={() => setIsGalleryOpen(false)}
+            className="absolute right-6 top-6 rounded-full border border-white/20 bg-white/10 p-3 text-white transition hover:bg-white/20"
+          >
+            <X size={22} />
+          </button>
+
+          <button
+            type="button"
+            onClick={showPreviousImage}
+            className="absolute left-6 rounded-full border border-white/20 bg-white/10 p-3 text-white transition hover:bg-white/20"
+          >
+            <ChevronLeft size={28} />
+          </button>
+
+          <div className="relative h-[78vh] w-full max-w-5xl overflow-hidden rounded-[2rem]">
+            <Image
+              src={selectedImage}
+              alt={productView.product.title}
+              fill
+              className="object-contain"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={showNextImage}
+            className="absolute right-6 rounded-full border border-white/20 bg-white/10 p-3 text-white transition hover:bg-white/20"
+          >
+            <ChevronRight size={28} />
+          </button>
+
+          <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-3 rounded-full bg-white/10 px-4 py-3 backdrop-blur">
+            {galleryImages.map((image, index) => (
+              <button
+                key={`fullscreen-${image}-${index}`}
+                type="button"
+                onClick={() => setSelectedImageIndex(index)}
+                className={[
+                  "relative h-14 w-14 overflow-hidden rounded-xl border-2 transition",
+                  selectedImageIndex === index
+                    ? "border-white"
+                    : "border-transparent opacity-70 hover:opacity-100",
+                ].join(" ")}
+              >
+                <Image
+                  src={image}
+                  alt={`${productView.product.title} fullscreen view ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <SiteFooter />
     </main>
