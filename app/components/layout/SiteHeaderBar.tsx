@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Globe2, Leaf, PenTool } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import { SlBasket } from "react-icons/sl";
 
@@ -11,6 +12,23 @@ import { NavigationMenuDemo } from "../navigation/NavigationMenu";
 
 export default function SiteHeaderBar() {
   const { t } = useLanguage();
+  const promoItems = [
+    {
+      icon: PenTool,
+      title: t.header.promoShippingTitle,
+      text: t.header.promoShippingText,
+    },
+    {
+      icon: Globe2,
+      title: t.header.promoReturnsTitle,
+      text: t.header.promoReturnsText,
+    },
+    {
+      icon: Leaf,
+      title: t.header.promoLogoTitle,
+      text: t.header.promoLogoText,
+    },
+  ];
 
   return (
     <nav className="w-full bg-white shadow-sm">
@@ -49,30 +67,28 @@ export default function SiteHeaderBar() {
 
       <div className="bg-[#0c437c] py-4 text-white">
         <div className="mx-auto grid max-w-7xl grid-cols-1 gap-4 px-8 text-center md:grid-cols-3">
-          <div>
-            <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-              {t.header.promoShippingTitle}
-            </p>
-            <p className="text-s underline underline-offset-4">
-              {t.header.promoShippingText}
-            </p>
-          </div>
-          <div className="border-white/10 md:border-x">
-            <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-              {t.header.promoReturnsTitle}
-            </p>
-            <p className="text-s underline underline-offset-4">
-              {t.header.promoReturnsText}
-            </p>
-          </div>
-          <div>
-            <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
-              {t.header.promoLogoTitle}
-            </p>
-            <p className="text-s underline underline-offset-4">
-              {t.header.promoLogoText}
-            </p>
-          </div>
+          {promoItems.map((item, index) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.title}
+                className={index === 1 ? "border-white/10 md:border-x" : ""}
+              >
+                <div className="mb-2 flex justify-center">
+                  <span className="inline-flex rounded-full bg-white/10 p-2.5">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                </div>
+                <p className="mb-0.5 text-[15px] font-bold uppercase tracking-[0.2em]">
+                  {item.title}
+                </p>
+                {/* <p className="text-s underline underline-offset-4">
+                  {item.text}
+                </p> */}
+              </div>
+            );
+          })}
         </div>
       </div>
     </nav>
