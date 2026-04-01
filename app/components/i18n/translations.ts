@@ -150,6 +150,19 @@ export const translations = {
           "Partnerships",
           "Technical Support",
         ],
+        validation: {
+          firstName: "Please enter your first name.",
+          lastName: "Please enter your last name.",
+          email: "Please enter a valid email address.",
+          company: "Please enter your company name.",
+          enquiryType: "Please choose an enquiry type.",
+          message: "Please enter a longer message.",
+        },
+        status: {
+          sending: "Sending...",
+          success: "Your message has been sent successfully.",
+          error: "Something went wrong while sending your message.",
+        },
         privacy:
           "SOTICO Group needs the contact information you provide to contact you about our products and services. You may unsubscribe from these communications at anytime. For information on how to unsubscribe, as well as our privacy practices and commitment to protecting your privacy, check out our Privacy Policy.",
         privacyLink: "Privacy Policy",
@@ -422,6 +435,19 @@ export const translations = {
           "Partenariats",
           "Support technique",
         ],
+        validation: {
+          firstName: "Veuillez saisir votre prénom.",
+          lastName: "Veuillez saisir votre nom.",
+          email: "Veuillez saisir une adresse e-mail valide.",
+          company: "Veuillez saisir le nom de votre entreprise.",
+          enquiryType: "Veuillez choisir un type de demande.",
+          message: "Veuillez saisir un message plus détaillé.",
+        },
+        status: {
+          sending: "Envoi...",
+          success: "Votre message a bien été envoyé.",
+          error: "Une erreur est survenue lors de l'envoi du message.",
+        },
         privacy:
           "SOTICO Group a besoin des informations que vous nous fournissez afin de vous contacter au sujet de nos produits et services. Vous pouvez vous désinscrire à tout moment. Pour en savoir plus sur la désinscription, nos pratiques de confidentialité et notre engagement à protéger vos données, consultez notre Politique de confidentialité.",
         privacyLink: "Politique de confidentialité",
