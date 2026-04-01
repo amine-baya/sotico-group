@@ -19,7 +19,7 @@ export default function CategoryGrid() {
             href={category.href}
             className="group relative block overflow-hidden rounded-2xl"
           >
-            <div className="relative aspect-[4/3]">
+            <div className="relative aspect-[4/4.8] md:aspect-[4/4.6] xl:aspect-[4/4.8]">
               <Image
                 src={category.image}
                 alt={category.title}

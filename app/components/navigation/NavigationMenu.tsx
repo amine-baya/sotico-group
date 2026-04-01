@@ -29,7 +29,7 @@ export function NavigationMenuDemo() {
     <NavigationMenu>
       <NavigationMenuList className="flex justify-center gap-14">
         <NavigationMenuItem>
-          <NavigationMenuLink>
+          <NavigationMenuLink asChild>
             <Link
               href="/#about-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
@@ -94,7 +94,7 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <NavigationMenuLink>
+          <NavigationMenuLink asChild>
             <Link
               href="/#contact-section"
               className="cursor-pointer uppercase tracking-[0.2em] text-[#0c437c] transition"
