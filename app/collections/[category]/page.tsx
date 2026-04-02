@@ -71,6 +71,7 @@ export default function CollectionPage() {
                 src={collection.category.image}
                 alt={collection.category.title}
                 fill
+                sizes="(max-width: 1023px) 100vw, 40vw"
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0c437c]/40 to-transparent" />
@@ -138,6 +139,7 @@ function ProductCard({
             src={product.image}
             alt={product.title}
             fill
+            sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
             className="object-cover transition duration-500 hover:scale-105"
           />
         </div>

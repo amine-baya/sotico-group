@@ -24,6 +24,7 @@ export default function CategoryGrid() {
                 src={category.image}
                 alt={category.title}
                 fill
+                sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 33vw"
                 className="object-cover transition duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/35 transition group-hover:bg-black/45" />

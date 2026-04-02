@@ -99,6 +99,7 @@ export default function ShowcaseProductPage() {
                       src={image}
                       alt={`${productView.product.title} view ${index + 1}`}
                       fill
+                      sizes="96px"
                       className="object-cover"
                     />
                   </button>
@@ -114,6 +115,7 @@ export default function ShowcaseProductPage() {
                   src={selectedImage}
                   alt={productView.product.title}
                   fill
+                  sizes="(max-width: 767px) 100vw, 60vw"
                   className="object-cover transition duration-300 hover:scale-[1.03]"
                 />
               </button>
@@ -242,6 +244,7 @@ export default function ShowcaseProductPage() {
               src={selectedImage}
               alt={productView.product.title}
               fill
+              sizes="100vw"
               className="object-contain"
             />
           </div>
@@ -271,6 +274,7 @@ export default function ShowcaseProductPage() {
                   src={image}
                   alt={`${productView.product.title} fullscreen view ${index + 1}`}
                   fill
+                  sizes="56px"
                   className="object-cover"
                 />
               </button>
