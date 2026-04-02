@@ -36,7 +36,7 @@ export default function HeroSection() {
               </h1>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <Link
-                  href="/products"
+                  href="/collections/healthcare"
                   className="editorial-gradient flex items-center justify-between rounded-md bg-[#0c437c] px-8 py-4 font-semibold text-white transition-all hover:shadow-xl hover:shadow-primary/20"
                 >
                   <span>{t.header.heroPrimaryCta}</span>

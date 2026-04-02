@@ -5,7 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 
 import {
@@ -30,19 +30,16 @@ export function LanguageProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [locale, setLocale] = useState<Locale>(() => {
-    if (typeof window === "undefined") {
-      return "en";
-    }
+  const locale = useSyncExternalStore(
+    subscribeToLocale,
+    getClientLocaleSnapshot,
+    getServerLocaleSnapshot
+  );
 
-    const storedLocale = window.localStorage.getItem("sotico-locale");
-
-    if (storedLocale === "en" || storedLocale === "fr") {
-      return storedLocale;
-    }
-
-    return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
-  });
+  const setLocale = (nextLocale: Locale) => {
+    window.localStorage.setItem("sotico-locale", nextLocale);
+    window.dispatchEvent(new Event("sotico-locale-change"));
+  };
 
   useEffect(() => {
     window.localStorage.setItem("sotico-locale", locale);
@@ -76,3 +73,27 @@ export function useLanguage() {
 }
 
 export { locales };
+
+function subscribeToLocale(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener("sotico-locale-change", callback);
+
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("sotico-locale-change", callback);
+  };
+}
+
+function getClientLocaleSnapshot(): Locale {
+  const storedLocale = window.localStorage.getItem("sotico-locale");
+
+  if (storedLocale === "en" || storedLocale === "fr") {
+    return storedLocale;
+  }
+
+  return navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+}
+
+function getServerLocaleSnapshot(): Locale {
+  return "en";
+}
