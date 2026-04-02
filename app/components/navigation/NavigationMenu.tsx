@@ -171,30 +171,24 @@ function MenuPlaceholder({ label }: { label: string }) {
       <NavigationMenuContent>
         <ul className="grid w-[200px]">
           <li>
-            <NavigationMenuLink
-              render={
-                <Link href="#" className="flex-row items-center gap-2">
-                  <CircleAlertIcon />
-                  {t.navigation.backlog}
-                </Link>
-              }
-            />
-            <NavigationMenuLink
-              render={
-                <Link href="#" className="flex-row items-center gap-2">
-                  <CircleDashedIcon />
-                  {t.navigation.todo}
-                </Link>
-              }
-            />
-            <NavigationMenuLink
-              render={
-                <Link href="#" className="flex-row items-center gap-2">
-                  <CircleCheckIcon />
-                  {t.navigation.done}
-                </Link>
-              }
-            />
+            <NavigationMenuLink asChild>
+              <Link href="#" className="flex-row items-center gap-2">
+                <CircleAlertIcon />
+                {t.navigation.backlog}
+              </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
+              <Link href="#" className="flex-row items-center gap-2">
+                <CircleDashedIcon />
+                {t.navigation.todo}
+              </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
+              <Link href="#" className="flex-row items-center gap-2">
+                <CircleCheckIcon />
+                {t.navigation.done}
+              </Link>
+            </NavigationMenuLink>
           </li>
         </ul>
       </NavigationMenuContent>
