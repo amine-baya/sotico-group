@@ -264,11 +264,11 @@ export const translations = {
       fetchError: "Error while loading products",
       categories: [
         { value: "All", label: "All" },
-        { value: "Construction", label: "Construction" },
-        { value: "Tennis", label: "Tennis" },
-        { value: "Industrial", label: "Industrial" },
-        { value: "Safety", label: "Safety" },
-        { value: "Other", label: "Other" },
+        { value: "HEALTHCARE", label: "Healthcare" },
+        { value: "INDUSTRY", label: "Industry" },
+        { value: "HOSPITALITY", label: "Hospitality" },
+        { value: "SERVICE", label: "Service" },
+        { value: "CLEANING", label: "Cleaning" },
       ],
       create: {
         title: "Add New Product",
@@ -284,7 +284,8 @@ export const translations = {
         placeholders: {
           name: "Ex: Protective coverall",
           price: "0.00",
-          description: "Details about the garment (material, durability, use...)",
+          description:
+            "Details about the garment (material, durability, use...)",
         },
       },
       editPage: {
@@ -336,7 +337,8 @@ export const translations = {
       promoReturnsTitle: "LOGISTIQUE GLOBALE",
       promoReturnsText: "Une livraison fiable sur vos marches",
       promoLogoTitle: "INNOVATION ECO",
-      promoLogoText: "Des matieres responsables et une production plus intelligente",
+      promoLogoText:
+        "Des matieres responsables et une production plus intelligente",
       heroEyebrow: "SOTICO GROUP",
       heroTitle: "UNE GRANDE MARQUE POUR LES PROFESSIONNELS",
       heroPrimaryCta: "DÉCOUVREZ NOTRE CATALOGUE",
@@ -583,8 +585,7 @@ export const translations = {
         placeholders: {
           name: "Ex : Combinaison de protection",
           price: "0.00",
-          description:
-            "Détails sur la tenue (matière, durabilité, usage...)",
+          description: "Détails sur la tenue (matière, durabilité, usage...)",
         },
       },
       editPage: {

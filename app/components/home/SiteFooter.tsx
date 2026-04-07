@@ -4,6 +4,24 @@ import Link from "next/link";
 
 import { useLanguage } from "../providers/LanguageProvider";
 
+const phoneHref = "tel:+21673288533";
+const primaryEmailHref = "mailto:contact@soticogroup.com";
+const secondaryEmailHref = "mailto:mk@soticogroup.com";
+const mapsHref =
+  "https://www.google.com/maps/@35.6838183,10.578252,153m/data=!3m1!1e3?entry=ttu&g_ep=EgoyMDI2MDQwMS4wIKXMDSoASAFQAw%3D%3D";
+const socialLinks = [
+  {
+    href: "https://sotico-group.com",
+    label: "LinkedIn",
+    icon: "🌐",
+  },
+  {
+    href: "https://www.facebook.com/319446832109143",
+    label: "Facebook",
+    icon: "📘",
+  },
+];
+
 export default function SiteFooter() {
   const { t } = useLanguage();
 
@@ -50,9 +68,30 @@ export default function SiteFooter() {
             {t.home.footer.contactTitle}
           </h4>
           <ul className="space-y-2">
-            <li>📞 (+216) 73 288 533/544</li>
-            <li>📧 mk@soticogroup.com / contact@soticogroup.com</li>
-            <li>📍 GP1, Route de Sfax Z.I. BeniRabiaa 4015 M&apos;saken - Tunisie</li>
+            <li>
+              <a className="transition hover:text-white" href={phoneHref}>
+                📞 (+216) 73 288 533
+              </a>
+            </li>
+            <li className="space-x-2">
+              <a className="transition hover:text-white" href={primaryEmailHref}>
+                📧 contact@soticogroup.com
+              </a>
+              <span className="text-gray-500 pointer">/</span>
+              <a className="transition hover:text-white" href={secondaryEmailHref}>
+                mk@soticogroup.com
+              </a>
+            </li>
+            <li>
+              <a
+                className="transition hover:text-white"
+                href={mapsHref}
+                target="_blank"
+                rel="noreferrer"
+              >
+                📍 GP1, Route de Sfax Z.I. Beni Rabiaa 4015 M&apos;saken - Tunisie
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -61,15 +100,18 @@ export default function SiteFooter() {
             {t.home.footer.followUs}
           </h4>
           <div className="flex gap-4 text-2xl">
-            <a href="#" className="transition hover:text-white">
-              🌐
-            </a>
-            <a href="#" className="transition hover:text-white">
-              📘
-            </a>
-            <a href="#" className="transition hover:text-white">
-              📸
-            </a>
+            {socialLinks.map((socialLink) => (
+              <a
+                key={socialLink.label}
+                href={socialLink.href}
+                className="transition hover:text-white"
+                target="_blank"
+                rel="noreferrer"
+                aria-label={socialLink.label}
+              >
+                {socialLink.icon}
+              </a>
+            ))}
           </div>
         </div>
       </div>

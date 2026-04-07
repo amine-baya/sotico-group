@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 
 import "./globals.css";
+import { AuthProvider } from "./components/providers/AuthProvider";
 import { LanguageProvider } from "./components/providers/LanguageProvider";
 
 const montserrat = Montserrat({
@@ -11,7 +12,7 @@ const montserrat = Montserrat({
 });
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://sotico-group.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://sotico-group.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -90,7 +91,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${montserrat.className} antialiased`}>
-        <LanguageProvider>{children}</LanguageProvider>
+        <AuthProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
