@@ -44,6 +44,8 @@ export function AdminProductsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchData = async () => {
@@ -74,6 +76,20 @@ export function AdminProductsScreen() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl("");
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(previewUrl);
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [imageFile]);
 
   const handleCreateCategory = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -123,11 +139,17 @@ export function AdminProductsScreen() {
       setIsSavingProduct(true);
       setErrorMessage("");
 
+      let uploadedImageUrl = productForm.imageUrl;
+
+      if (imageFile) {
+        uploadedImageUrl = await uploadProductImage(imageFile);
+      }
+
       const payload = {
         name: productForm.name,
         description: productForm.description,
         price: productForm.price ? Number(productForm.price) : null,
-        imageUrl: productForm.imageUrl,
+        imageUrl: uploadedImageUrl,
         categoryId: productForm.categoryId,
         sizes: productForm.sizes
           .split(",")
@@ -152,6 +174,7 @@ export function AdminProductsScreen() {
         ...emptyProductForm,
         categoryId: current.categoryId,
       }));
+      setImageFile(null);
     } catch (error) {
       console.error(error);
       setErrorMessage("Unable to create product.");
@@ -284,7 +307,7 @@ export function AdminProductsScreen() {
             <CardHeader className="border-b border-slate-100 py-6">
               <CardTitle>Create product</CardTitle>
               <CardDescription>
-                Add a product with an image URL, sizes, and bilingual color labels.
+                Add a product with a direct upload, sizes, and bilingual color labels.
               </CardDescription>
             </CardHeader>
             <CardContent className="py-6">
@@ -331,13 +354,49 @@ export function AdminProductsScreen() {
                     placeholder="149.00"
                   />
                   <AdminField
-                    label="Image URL"
+                    label="Image URL fallback"
                     value={productForm.imageUrl}
                     onChange={(value) =>
                       setProductForm((current) => ({ ...current, imageUrl: value }))
                     }
                     placeholder="https://images.unsplash.com/..."
                   />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-[1fr_220px]">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-600">
+                      Product image
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(event) => {
+                        const nextFile = event.target.files?.[0] ?? null;
+                        setImageFile(nextFile);
+                      }}
+                      className="block h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500 file:mr-4 file:rounded-full file:border-0 file:bg-sky-100 file:px-4 file:py-2 file:font-medium file:text-sky-700 hover:file:bg-sky-200"
+                    />
+                    <p className="text-xs text-slate-400">
+                      Upload from your computer. In production this stores the file
+                      in Vercel Blob and saves the public URL in Postgres.
+                    </p>
+                  </div>
+
+                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    {imagePreviewUrl || productForm.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imagePreviewUrl || productForm.imageUrl}
+                        alt="Product preview"
+                        className="h-full min-h-32 w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full min-h-32 items-center justify-center px-4 text-center text-xs text-slate-400">
+                        Image preview
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -379,7 +438,7 @@ export function AdminProductsScreen() {
 
                 <Button type="submit" size="lg" disabled={isSavingProduct}>
                   <Plus className="h-4 w-4" />
-                  Create product
+                  {isSavingProduct ? "Saving..." : "Create product"}
                 </Button>
               </form>
             </CardContent>
@@ -477,6 +536,24 @@ export function AdminProductsScreen() {
       </div>
     </div>
   );
+}
+
+async function uploadProductImage(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch("/api/uploads/products", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to upload image");
+  }
+
+  const data = (await response.json()) as { url: string };
+
+  return data.url;
 }
 
 function AdminField({

@@ -1,6 +1,8 @@
+import { del } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { isVercelBlobUrl } from "@/lib/blob";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin-auth";
 
@@ -62,6 +64,14 @@ export async function PATCH(
 
   const { id } = await params;
 
+  const existingProduct = await prisma.product.findUnique({
+    where: { id },
+  });
+
+  if (!existingProduct) {
+    return NextResponse.json({ message: "Product not found" }, { status: 404 });
+  }
+
   const product = await prisma.product.update({
     where: { id },
     data: {
@@ -78,6 +88,14 @@ export async function PATCH(
     },
   });
 
+  if (
+    existingProduct.imageUrl &&
+    existingProduct.imageUrl !== product.imageUrl &&
+    isVercelBlobUrl(existingProduct.imageUrl)
+  ) {
+    await del(existingProduct.imageUrl);
+  }
+
   return NextResponse.json(product);
 }
 
@@ -93,9 +111,23 @@ export async function DELETE(
 
   const { id } = await params;
 
+  const existingProduct = await prisma.product.findUnique({
+    where: { id },
+  });
+
+  if (!existingProduct) {
+    return NextResponse.json({ message: "Product not found" }, { status: 404 });
+  }
+
   await prisma.product.delete({
     where: { id },
   });
+
+  const imageUrl = existingProduct.imageUrl;
+
+  if (imageUrl && isVercelBlobUrl(imageUrl)) {
+    await del(imageUrl);
+  }
 
   return NextResponse.json({ success: true });
 }
