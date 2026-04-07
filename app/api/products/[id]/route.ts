@@ -19,7 +19,7 @@ const updateProductSchema = z.object({
   name: z.string().min(2).max(120),
   description: z.string().max(4000).optional().default(""),
   price: z.coerce.number().nonnegative().nullable().optional(),
-  imageUrl: z.string().url().or(z.literal("")).optional().default(""),
+  imageUrls: z.array(z.string().url()).length(3),
   categoryId: z.string().min(1),
   sizes: z.array(z.string().min(1)).default([]),
   colors: z.array(colorSchema).default([]),
@@ -78,7 +78,7 @@ export async function PATCH(
       name: parsedBody.data.name,
       description: parsedBody.data.description,
       price: parsedBody.data.price ?? null,
-      imageUrl: parsedBody.data.imageUrl || null,
+      imageUrls: parsedBody.data.imageUrls,
       categoryId: parsedBody.data.categoryId,
       sizes: parsedBody.data.sizes,
       colors: parsedBody.data.colors,
@@ -88,12 +88,12 @@ export async function PATCH(
     },
   });
 
-  if (
-    existingProduct.imageUrl &&
-    existingProduct.imageUrl !== product.imageUrl &&
-    isVercelBlobUrl(existingProduct.imageUrl)
-  ) {
-    await del(existingProduct.imageUrl);
+  const removedBlobUrls = existingProduct.imageUrls.filter(
+    (url) => !product.imageUrls.includes(url) && isVercelBlobUrl(url)
+  );
+
+  if (removedBlobUrls.length > 0) {
+    await del(removedBlobUrls);
   }
 
   return NextResponse.json(product);
@@ -123,10 +123,10 @@ export async function DELETE(
     where: { id },
   });
 
-  const imageUrl = existingProduct.imageUrl;
+  const blobUrls = existingProduct.imageUrls.filter((url) => isVercelBlobUrl(url));
 
-  if (imageUrl && isVercelBlobUrl(imageUrl)) {
-    await del(imageUrl);
+  if (blobUrls.length > 0) {
+    await del(blobUrls);
   }
 
   return NextResponse.json({ success: true });

@@ -21,7 +21,7 @@ export type AdminProduct = {
   name: string;
   description: string | null;
   price: number | null;
-  imageUrl: string | null;
+  imageUrls: string[];
   sizes: string[];
   colors: AdminColor[];
   categoryId: string;

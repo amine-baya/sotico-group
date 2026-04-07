@@ -14,38 +14,45 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { productSizeOptions } from "./options";
+import { ProductColorSelector } from "./ProductColorSelector";
+import { ProductImageUploader } from "./ProductImageUploader";
 import { AdminCategory, AdminColor, AdminProduct } from "./types";
 
 type ProductFormState = {
   name: string;
   description: string;
   price: string;
-  imageUrl: string;
   categoryId: string;
-  sizes: string;
-  colors: string;
+  sizes: string[];
+  colors: AdminColor[];
 };
 
 const emptyProductForm: ProductFormState = {
   name: "",
   description: "",
   price: "",
-  imageUrl: "",
   categoryId: "",
-  sizes: "",
-  colors: "",
+  sizes: [],
+  colors: [],
 };
+
+const imageSlotCount = 3;
 
 export function AdminProductsScreen() {
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [categoryName, setCategoryName] = useState("");
   const [productForm, setProductForm] = useState<ProductFormState>(emptyProductForm);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>(
+    Array.from({ length: imageSlotCount }, () => null)
+  );
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(
+    Array.from({ length: imageSlotCount }, () => "")
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
   const fetchData = async () => {
@@ -78,18 +85,19 @@ export function AdminProductsScreen() {
   }, []);
 
   useEffect(() => {
-    if (!imageFile) {
-      setImagePreviewUrl("");
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(imageFile);
-    setImagePreviewUrl(previewUrl);
+    const previewUrls = imageFiles.map((file) =>
+      file ? URL.createObjectURL(file) : ""
+    );
+    setImagePreviewUrls(previewUrls);
 
     return () => {
-      URL.revokeObjectURL(previewUrl);
+      previewUrls.forEach((previewUrl) => {
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+      });
     };
-  }, [imageFile]);
+  }, [imageFiles]);
 
   const handleCreateCategory = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -113,7 +121,9 @@ export function AdminProductsScreen() {
       }
 
       const category = (await response.json()) as AdminCategory;
-      setCategories((current) => [...current, category].sort((a, b) => a.name.localeCompare(b.name)));
+      setCategories((current) =>
+        [...current, category].sort((a, b) => a.name.localeCompare(b.name))
+      );
       setProductForm((current) => ({
         ...current,
         categoryId: current.categoryId || category.id,
@@ -135,33 +145,31 @@ export function AdminProductsScreen() {
       return;
     }
 
+    if (imageFiles.some((file) => !file)) {
+      setErrorMessage("Please upload the three product images.");
+      return;
+    }
+
     try {
       setIsSavingProduct(true);
       setErrorMessage("");
 
-      let uploadedImageUrl = productForm.imageUrl;
-
-      if (imageFile) {
-        uploadedImageUrl = await uploadProductImage(imageFile);
-      }
-
-      const payload = {
-        name: productForm.name,
-        description: productForm.description,
-        price: productForm.price ? Number(productForm.price) : null,
-        imageUrl: uploadedImageUrl,
-        categoryId: productForm.categoryId,
-        sizes: productForm.sizes
-          .split(",")
-          .map((size) => size.trim())
-          .filter(Boolean),
-        colors: parseColors(productForm.colors),
-      };
+      const imageUrls = await Promise.all(
+        imageFiles.map((file, index) => uploadProductImage(file as File, index))
+      );
 
       const response = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: productForm.name,
+          description: productForm.description,
+          price: productForm.price ? Number(productForm.price) : null,
+          imageUrls,
+          categoryId: productForm.categoryId,
+          sizes: productForm.sizes,
+          colors: productForm.colors,
+        }),
       });
 
       if (!response.ok) {
@@ -174,7 +182,7 @@ export function AdminProductsScreen() {
         ...emptyProductForm,
         categoryId: current.categoryId,
       }));
-      setImageFile(null);
+      setImageFiles(Array.from({ length: imageSlotCount }, () => null));
     } catch (error) {
       console.error(error);
       setErrorMessage("Unable to create product.");
@@ -206,6 +214,24 @@ export function AdminProductsScreen() {
     }
   };
 
+  const toggleSize = (size: string) => {
+    setProductForm((current) => ({
+      ...current,
+      sizes: current.sizes.includes(size)
+        ? current.sizes.filter((item) => item !== size)
+        : [...current.sizes, size],
+    }));
+  };
+
+  const toggleColor = (color: AdminColor) => {
+    setProductForm((current) => ({
+      ...current,
+      colors: current.colors.some((item) => item.id === color.id)
+        ? current.colors.filter((item) => item.id !== color.id)
+        : [...current.colors, color],
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f8fbff_0%,#eef4fa_100%)] px-4 py-10 text-slate-900">
       <div className="mx-auto max-w-7xl space-y-8">
@@ -218,8 +244,8 @@ export function AdminProductsScreen() {
               Manage categories and products
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-500">
-              A single admin space for your Postgres catalog. Create categories,
-              add products, and keep the showroom content updated.
+              Each product now carries a three-image gallery, selectable colors,
+              and tagged sizes for a cleaner catalog workflow.
             </p>
           </div>
 
@@ -307,11 +333,11 @@ export function AdminProductsScreen() {
             <CardHeader className="border-b border-slate-100 py-6">
               <CardTitle>Create product</CardTitle>
               <CardDescription>
-                Add a product with a direct upload, sizes, and bilingual color labels.
+                Upload three images, choose preset colors, and assign size tags.
               </CardDescription>
             </CardHeader>
             <CardContent className="py-6">
-              <form className="space-y-5" onSubmit={handleCreateProduct}>
+              <form className="space-y-6" onSubmit={handleCreateProduct}>
                 <div className="grid gap-4 md:grid-cols-2">
                   <AdminField
                     label="Product name"
@@ -353,88 +379,67 @@ export function AdminProductsScreen() {
                     }
                     placeholder="149.00"
                   />
-                  <AdminField
-                    label="Image URL fallback"
-                    value={productForm.imageUrl}
-                    onChange={(value) =>
-                      setProductForm((current) => ({ ...current, imageUrl: value }))
-                    }
-                    placeholder="https://images.unsplash.com/..."
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-[1fr_220px]">
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-600">
-                      Product image
+                      Description
                     </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(event) => {
-                        const nextFile = event.target.files?.[0] ?? null;
-                        setImageFile(nextFile);
-                      }}
-                      className="block h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500 file:mr-4 file:rounded-full file:border-0 file:bg-sky-100 file:px-4 file:py-2 file:font-medium file:text-sky-700 hover:file:bg-sky-200"
+                    <textarea
+                      value={productForm.description}
+                      onChange={(event) =>
+                        setProductForm((current) => ({
+                          ...current,
+                          description: event.target.value,
+                        }))
+                      }
+                      rows={4}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
+                      placeholder="Describe the fit, fabric, and intended usage."
                     />
-                    <p className="text-xs text-slate-400">
-                      Upload from your computer. In production this stores the file
-                      in Vercel Blob and saves the public URL in Postgres.
-                    </p>
-                  </div>
-
-                  <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                    {imagePreviewUrl || productForm.imageUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={imagePreviewUrl || productForm.imageUrl}
-                        alt="Product preview"
-                        className="h-full min-h-32 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full min-h-32 items-center justify-center px-4 text-center text-xs text-slate-400">
-                        Image preview
-                      </div>
-                    )}
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <ProductImageUploader
+                  label="Product images"
+                  imageUrls={imagePreviewUrls}
+                  helpText="Upload all three images at once from a single picker."
+                  onChange={(files) => {
+                    const nextFiles = Array.from({ length: imageSlotCount }, (_, index) =>
+                      files[index] ?? null
+                    );
+                    setImageFiles(nextFiles);
+                  }}
+                />
+
+                <div className="space-y-3">
                   <label className="text-sm font-medium text-slate-600">
-                    Description
+                    Sizes
                   </label>
-                  <textarea
-                    value={productForm.description}
-                    onChange={(event) =>
-                      setProductForm((current) => ({
-                        ...current,
-                        description: event.target.value,
-                      }))
-                    }
-                    rows={4}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
-                    placeholder="Describe the fit, fabric, and intended usage."
-                  />
+                  <div className="flex flex-wrap gap-3">
+                    {productSizeOptions.map((size) => {
+                      const isActive = productForm.sizes.includes(size);
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                            isActive
+                              ? "border-sky-600 bg-sky-600 text-white"
+                              : "border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-700"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <AdminField
-                    label="Sizes"
-                    value={productForm.sizes}
-                    onChange={(value) =>
-                      setProductForm((current) => ({ ...current, sizes: value }))
-                    }
-                    placeholder="XS, S, M, L, XL"
-                  />
-                  <AdminField
-                    label="Colors"
-                    value={productForm.colors}
-                    onChange={(value) =>
-                      setProductForm((current) => ({ ...current, colors: value }))
-                    }
-                    placeholder="navy|Navy|Marine|#1E3A5F, white|White|Blanc|#F4F4F5"
-                  />
-                </div>
+                <ProductColorSelector
+                  selectedColors={productForm.colors}
+                  onToggle={toggleColor}
+                />
 
                 <Button type="submit" size="lg" disabled={isSavingProduct}>
                   <Plus className="h-4 w-4" />
@@ -470,10 +475,10 @@ export function AdminProductsScreen() {
                     className="rounded-[24px] border border-slate-200 bg-white py-0 shadow-none"
                   >
                     <div className="relative h-52 overflow-hidden rounded-t-[24px] bg-slate-100">
-                      {product.imageUrl ? (
+                      {product.imageUrls[0] ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={product.imageUrl}
+                          src={product.imageUrls[0]}
                           alt={product.name}
                           className="h-full w-full object-cover"
                         />
@@ -483,7 +488,22 @@ export function AdminProductsScreen() {
                         </div>
                       )}
                     </div>
-                    <CardContent className="space-y-3 py-4">
+                    <CardContent className="space-y-4 py-4">
+                      <div className="flex gap-2">
+                        {product.imageUrls.map((imageUrl, index) => (
+                          <div
+                            key={`${product.id}-${index}`}
+                            className="h-14 w-14 overflow-hidden rounded-xl bg-slate-100"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imageUrl}
+                              alt={`${product.name} ${index + 1}`}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
@@ -507,6 +527,20 @@ export function AdminProductsScreen() {
                             className="rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500"
                           >
                             {size}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {product.colors.map((color) => (
+                          <span
+                            key={color.id}
+                            className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-medium text-slate-500"
+                          >
+                            <span
+                              className="h-3 w-3 rounded-full border border-slate-300"
+                              style={{ backgroundColor: color.hex }}
+                            />
+                            {color.name.en}
                           </span>
                         ))}
                       </div>
@@ -538,9 +572,10 @@ export function AdminProductsScreen() {
   );
 }
 
-async function uploadProductImage(file: File) {
+async function uploadProductImage(file: File, index: number) {
   const formData = new FormData();
   formData.append("file", file);
+  formData.append("slot", String(index + 1));
 
   const response = await fetch("/api/uploads/products", {
     method: "POST",
@@ -578,28 +613,4 @@ function AdminField({
       />
     </div>
   );
-}
-
-function parseColors(value: string): AdminColor[] {
-  if (!value.trim()) {
-    return [];
-  }
-
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const [id, nameEn, nameFr, hex] = entry.split("|").map((part) => part.trim());
-
-      return {
-        id,
-        name: {
-          en: nameEn,
-          fr: nameFr,
-        },
-        hex,
-      };
-    })
-    .filter((color) => color.id && color.name.en && color.name.fr && color.hex);
 }

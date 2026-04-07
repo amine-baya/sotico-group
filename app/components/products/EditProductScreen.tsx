@@ -14,22 +14,27 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AdminCategory, AdminProduct } from "./types";
+import { productSizeOptions } from "./options";
+import { ProductColorSelector } from "./ProductColorSelector";
+import { ProductImageUploader } from "./ProductImageUploader";
+import { AdminCategory, AdminColor, AdminProduct } from "./types";
 
 type ProductFormState = {
   name: string;
   description: string;
   price: string;
-  imageUrl: string;
+  imageUrls: string[];
   categoryId: string;
-  sizes: string;
-  colors: string;
+  sizes: string[];
+  colors: AdminColor[];
 };
 
 export function EditProductScreen({ productId }: { productId: string }) {
   const router = useRouter();
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [form, setForm] = useState<ProductFormState | null>(null);
+  const [imageFiles, setImageFiles] = useState<(File | null)[]>([null, null, null]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>(["", "", ""]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -55,10 +60,10 @@ export function EditProductScreen({ productId }: { productId: string }) {
           name: product.name,
           description: product.description || "",
           price: product.price?.toString() || "",
-          imageUrl: product.imageUrl || "",
+          imageUrls: normalizeImageUrls(product.imageUrls),
           categoryId: product.categoryId,
-          sizes: product.sizes.join(", "),
-          colors: stringifyColors(product.colors),
+          sizes: product.sizes,
+          colors: product.colors,
         });
       } catch (error) {
         console.error(error);
@@ -71,6 +76,26 @@ export function EditProductScreen({ productId }: { productId: string }) {
     fetchData();
   }, [productId]);
 
+  useEffect(() => {
+    const previewUrls = imageFiles.map((file, index) => {
+      if (file) {
+        return URL.createObjectURL(file);
+      }
+
+      return form?.imageUrls[index] ?? "";
+    });
+
+    setImagePreviewUrls(previewUrls);
+
+    return () => {
+      previewUrls.forEach((previewUrl, index) => {
+        if (imageFiles[index] && previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+        }
+      });
+    };
+  }, [form?.imageUrls, imageFiles]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -78,9 +103,22 @@ export function EditProductScreen({ productId }: { productId: string }) {
       return;
     }
 
+    if (form.imageUrls.some((imageUrl) => !imageUrl.trim())) {
+      setErrorMessage("Please provide the three image URLs.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       setErrorMessage("");
+
+      const nextImageUrls = [...form.imageUrls];
+
+      for (const [index, file] of imageFiles.entries()) {
+        if (file) {
+          nextImageUrls[index] = await uploadProductImage(file, index);
+        }
+      }
 
       const response = await fetch(`/api/products/${productId}`, {
         method: "PATCH",
@@ -89,13 +127,10 @@ export function EditProductScreen({ productId }: { productId: string }) {
           name: form.name,
           description: form.description,
           price: form.price ? Number(form.price) : null,
-          imageUrl: form.imageUrl,
+          imageUrls: nextImageUrls,
           categoryId: form.categoryId,
-          sizes: form.sizes
-            .split(",")
-            .map((size) => size.trim())
-            .filter(Boolean),
-          colors: parseColors(form.colors),
+          sizes: form.sizes,
+          colors: form.colors,
         }),
       });
 
@@ -130,7 +165,7 @@ export function EditProductScreen({ productId }: { productId: string }) {
               <div>
                 <CardTitle>Edit product</CardTitle>
                 <CardDescription>
-                  Update the category, image, sizes, and styling details.
+                  Update the three-image gallery, tagged sizes, and selected colors.
                 </CardDescription>
               </div>
               <Button asChild variant="outline">
@@ -141,14 +176,14 @@ export function EditProductScreen({ productId }: { productId: string }) {
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="py-6">
+          <CardContent className="space-y-6 py-6">
             {errorMessage ? (
-              <div className="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {errorMessage}
               </div>
             ) : null}
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid gap-4 md:grid-cols-2">
                 <EditorField
                   label="Product name"
@@ -183,49 +218,84 @@ export function EditProductScreen({ productId }: { productId: string }) {
                   onChange={(value) => setForm((current) => current && { ...current, price: value })}
                   placeholder="149.00"
                 />
-                <EditorField
-                  label="Image URL"
-                  value={form.imageUrl}
-                  onChange={(value) =>
-                    setForm((current) => current && { ...current, imageUrl: value })
-                  }
-                  placeholder="https://images.unsplash.com/..."
-                />
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-slate-600">
+                    Description
+                  </label>
+                  <textarea
+                    value={form.description}
+                    onChange={(event) =>
+                      setForm((current) =>
+                        current ? { ...current, description: event.target.value } : current
+                      )
+                    }
+                    rows={4}
+                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
+                    placeholder="Describe the fit, fabric, and intended usage."
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-600">
-                  Description
-                </label>
-                <textarea
-                  value={form.description}
-                  onChange={(event) =>
-                    setForm((current) =>
-                      current ? { ...current, description: event.target.value } : current
-                    )
-                  }
-                  rows={4}
-                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
-                  placeholder="Describe the fit, fabric, and intended usage."
-                />
+              <ProductImageUploader
+                label="Product images"
+                imageUrls={imagePreviewUrls}
+                helpText="Choose 1 to 3 replacement images from a single upload field. Unchanged images stay as they are."
+                onChange={(files) => {
+                  const nextFiles = Array.from({ length: 3 }, (_, index) => files[index] ?? null);
+                  setImageFiles(nextFiles);
+                }}
+              />
+
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-slate-600">Sizes</label>
+                <div className="flex flex-wrap gap-3">
+                  {productSizeOptions.map((size) => {
+                    const isActive = form.sizes.includes(size);
+
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() =>
+                          setForm((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  sizes: current.sizes.includes(size)
+                                    ? current.sizes.filter((item) => item !== size)
+                                    : [...current.sizes, size],
+                                }
+                              : current
+                          )
+                        }
+                        className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                          isActive
+                            ? "border-sky-600 bg-sky-600 text-white"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-sky-300 hover:text-sky-700"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <EditorField
-                  label="Sizes"
-                  value={form.sizes}
-                  onChange={(value) => setForm((current) => current && { ...current, sizes: value })}
-                  placeholder="XS, S, M, L, XL"
-                />
-                <EditorField
-                  label="Colors"
-                  value={form.colors}
-                  onChange={(value) =>
-                    setForm((current) => current && { ...current, colors: value })
-                  }
-                  placeholder="navy|Navy|Marine|#1E3A5F, white|White|Blanc|#F4F4F5"
-                />
-              </div>
+              <ProductColorSelector
+                selectedColors={form.colors}
+                onToggle={(color) =>
+                  setForm((current) =>
+                    current
+                      ? {
+                          ...current,
+                          colors: current.colors.some((item) => item.id === color.id)
+                            ? current.colors.filter((item) => item.id !== color.id)
+                            : [...current.colors, color],
+                        }
+                      : current
+                  )
+                }
+              />
             </form>
           </CardContent>
           <CardFooter className="justify-end gap-3 border-t border-slate-100 bg-slate-50/80">
@@ -241,6 +311,25 @@ export function EditProductScreen({ productId }: { productId: string }) {
       </div>
     </div>
   );
+}
+
+async function uploadProductImage(file: File, index: number) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("slot", String(index + 1));
+
+  const response = await fetch("/api/uploads/products", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to upload image");
+  }
+
+  const data = (await response.json()) as { url: string };
+
+  return data.url;
 }
 
 function EditorField({
@@ -260,39 +349,13 @@ function EditorField({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
+        className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm outline-none transition focus:border-sky-400"
         placeholder={placeholder}
       />
     </div>
   );
 }
 
-function stringifyColors(colors: AdminProduct["colors"]) {
-  return colors
-    .map((color) => `${color.id}|${color.name.en}|${color.name.fr}|${color.hex}`)
-    .join(", ");
-}
-
-function parseColors(value: string) {
-  if (!value.trim()) {
-    return [];
-  }
-
-  return value
-    .split(",")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const [id, nameEn, nameFr, hex] = entry.split("|").map((part) => part.trim());
-
-      return {
-        id,
-        name: {
-          en: nameEn,
-          fr: nameFr,
-        },
-        hex,
-      };
-    })
-    .filter((color) => color.id && color.name.en && color.name.fr && color.hex);
+function normalizeImageUrls(imageUrls: string[]) {
+  return [...imageUrls, "", "", ""].slice(0, 3);
 }
