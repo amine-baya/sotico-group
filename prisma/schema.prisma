@@ -35,7 +35,7 @@ model Product {
   slug        String   @unique
   description String?
   price       Float?
-  imageUrl    String?
+  imageUrls   String[]
   sizes       String[]
   colors      Json?
   categoryId  String
