@@ -27,7 +27,7 @@ const updateProductSchema = z.object({
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
 
@@ -47,7 +47,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { errorResponse } = await requireAdmin();
 
@@ -59,7 +59,10 @@ export async function PATCH(
   const parsedBody = updateProductSchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json({ message: "Invalid product payload" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Invalid product payload" },
+      { status: 400 },
+    );
   }
 
   const { id } = await params;
@@ -89,7 +92,7 @@ export async function PATCH(
   });
 
   const removedBlobUrls = existingProduct.imageUrls.filter(
-    (url) => !product.imageUrls.includes(url) && isVercelBlobUrl(url)
+    (url: string) => !product.imageUrls.includes(url) && isVercelBlobUrl(url)
   );
 
   if (removedBlobUrls.length > 0) {
@@ -101,7 +104,7 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { errorResponse } = await requireAdmin();
 
@@ -123,7 +126,9 @@ export async function DELETE(
     where: { id },
   });
 
-  const blobUrls = existingProduct.imageUrls.filter((url) => isVercelBlobUrl(url));
+  const blobUrls = existingProduct.imageUrls.filter((url) =>
+    isVercelBlobUrl(url),
+  );
 
   if (blobUrls.length > 0) {
     await del(blobUrls);

@@ -11,11 +11,11 @@ export type Certificate = {
 };
 
 export const partnerLogos: PartnerLogo[] = [
-  { src: "/images.jpeg", alt: "Company Logo 1" },
-  { src: "/images.jpeg", alt: "Company Logo 2" },
-  { src: "/images.jpeg", alt: "Company Logo 3" },
-  { src: "/images.jpeg", alt: "Company Logo 4" },
-  { src: "/images.jpeg", alt: "Company Logo 5" },
+  { src: "/logo.png", alt: "Company Logo 1" },
+  { src: "/logo.png", alt: "Company Logo 2" },
+  { src: "/logo.png", alt: "Company Logo 3" },
+  { src: "/logo.png", alt: "Company Logo 4" },
+  { src: "/logo.png", alt: "Company Logo 5" },
 ];
 
 export const certificates: Certificate[] = [
