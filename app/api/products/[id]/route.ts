@@ -126,7 +126,7 @@ export async function DELETE(
     where: { id },
   });
 
-  const blobUrls = existingProduct.imageUrls.filter((url) =>
+  const blobUrls = existingProduct.imageUrls.filter((url: string) =>
     isVercelBlobUrl(url),
   );
 
