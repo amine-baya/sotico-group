@@ -14,21 +14,35 @@ const colorSchema = z.object({
   hex: z.string().min(4),
 });
 
+const featureSchema = z.object({
+  id: z.string().min(1),
+  name: z.object({
+    en: z.string().min(1),
+    fr: z.string().min(1),
+  }),
+  icon: z.string().min(1),
+});
+
 const productSchema = z.object({
   name: z.string().min(2).max(120),
   description: z.string().max(4000).optional().default(""),
   price: z.coerce.number().nonnegative().nullable().optional(),
   imageUrls: z.array(z.string().url()).length(3),
-  categoryId: z.string().min(1),
+  subCategoryId: z.string().min(1),
   sizes: z.array(z.string().min(1)).default([]),
   colors: z.array(colorSchema).default([]),
+  features: z.array(featureSchema).default([]),
 });
 
 export async function GET() {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      category: true,
+      subCategory: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 
@@ -56,12 +70,17 @@ export async function POST(request: Request) {
       description: parsedBody.data.description,
       price: parsedBody.data.price ?? null,
       imageUrls: parsedBody.data.imageUrls,
-      categoryId: parsedBody.data.categoryId,
+      subCategoryId: parsedBody.data.subCategoryId,
       sizes: parsedBody.data.sizes,
       colors: parsedBody.data.colors,
+      features: parsedBody.data.features,
     },
     include: {
-      category: true,
+      subCategory: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 

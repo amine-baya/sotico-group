@@ -24,7 +24,7 @@ type ProductFormState = {
   description: string;
   price: string;
   imageUrls: string[];
-  categoryId: string;
+  subCategoryId: string;
   sizes: string[];
   colors: AdminColor[];
 };
@@ -38,6 +38,7 @@ export function EditProductScreen({ productId }: { productId: string }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const subCategories = categories.flatMap((category) => category.subCategories);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,7 +62,7 @@ export function EditProductScreen({ productId }: { productId: string }) {
           description: product.description || "",
           price: product.price?.toString() || "",
           imageUrls: normalizeImageUrls(product.imageUrls),
-          categoryId: product.categoryId,
+          subCategoryId: product.subCategoryId,
           sizes: product.sizes,
           colors: product.colors,
         });
@@ -128,7 +129,7 @@ export function EditProductScreen({ productId }: { productId: string }) {
           description: form.description,
           price: form.price ? Number(form.price) : null,
           imageUrls: nextImageUrls,
-          categoryId: form.categoryId,
+          subCategoryId: form.subCategoryId,
           sizes: form.sizes,
           colors: form.colors,
         }),
@@ -192,19 +193,21 @@ export function EditProductScreen({ productId }: { productId: string }) {
                   placeholder="Premium scrub set"
                 />
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-600">Category</label>
+                  <label className="text-sm font-medium text-slate-600">Sub-category</label>
                   <select
-                    value={form.categoryId}
+                    value={form.subCategoryId}
                     onChange={(event) =>
                       setForm((current) =>
-                        current ? { ...current, categoryId: event.target.value } : current
+                        current ? { ...current, subCategoryId: event.target.value } : current
                       )
                     }
                     className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
                   >
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
+                    {subCategories.map((subCategory) => (
+                      <option key={subCategory.id} value={subCategory.id}>
+                        {categories.find((category) => category.id === subCategory.categoryId)
+                          ?.name}{" "}
+                        / {subCategory.name}
                       </option>
                     ))}
                   </select>

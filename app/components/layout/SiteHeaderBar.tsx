@@ -9,6 +9,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { getShowcaseCategories } from "../catalog/showcase-data";
 import { certificates } from "../home/home-content";
+import { useWorkwearMenuCategories } from "../navigation/use-workwear-menu";
 import { useLanguage } from "../providers/LanguageProvider";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { NavigationMenuDemo } from "../navigation/NavigationMenu";
@@ -20,6 +21,7 @@ export default function SiteHeaderBar() {
   const [searchQuery, setSearchQuery] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
   const showcaseCategories = getShowcaseCategories();
+  const workwearCategories = useWorkwearMenuCategories();
   const promoItems = [
     {
       icon: PenTool,
@@ -289,7 +291,7 @@ export default function SiteHeaderBar() {
                 <ChevronDown className="h-4 w-4" />
               </summary>
               <div className="mt-4 space-y-4">
-                {showcaseCategories.map((category) => (
+                {workwearCategories.map((category) => (
                   <div key={category.slug} className="space-y-2">
                     <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-500">
                       {category.title[locale]}
@@ -297,7 +299,7 @@ export default function SiteHeaderBar() {
                     <div className="space-y-2">
                       {category.subcategories.map((subcategory) => (
                         <Link
-                          key={subcategory.index}
+                          key={subcategory.slug}
                           href={`/collections/${category.slug}?sub=${subcategory.index}`}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block text-sm font-medium text-slate-700"

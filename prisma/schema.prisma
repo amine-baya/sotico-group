@@ -21,27 +21,44 @@ model User {
 }
 
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  products  Product[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id            String        @id @default(cuid())
+  name          String        @unique
+  slug          String        @unique
+  imageUrl      String?
+  subCategories SubCategory[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model SubCategory {
+  id         String    @id @default(cuid())
+  name       String
+  slug       String
+  categoryId String
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([categoryId, name])
+  @@unique([categoryId, slug])
+  @@index([categoryId])
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  price       Float?
-  imageUrls   String[]
-  sizes       String[]
-  colors      Json?
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String      @id @default(cuid())
+  name          String
+  slug          String      @unique
+  description   String?
+  price         Float?
+  imageUrls     String[]
+  sizes         String[]
+  colors        Json?
+  features      Json?
+  subCategoryId String
+  subCategory   SubCategory @relation(fields: [subCategoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
-  @@index([categoryId])
+  @@index([subCategoryId])
 }

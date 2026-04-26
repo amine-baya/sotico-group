@@ -7,15 +7,26 @@ import { requireAdmin } from "@/lib/admin-auth";
 
 const createCategorySchema = z.object({
   name: z.string().min(2).max(80),
+  imageUrl: z.string().url().optional().nullable(),
 });
 
 export async function GET() {
   const categories = await prisma.category.findMany({
     orderBy: { name: "asc" },
     include: {
+      subCategories: {
+        orderBy: { name: "asc" },
+        include: {
+          _count: {
+            select: {
+              products: true,
+            },
+          },
+        },
+      },
       _count: {
         select: {
-          products: true,
+          subCategories: true,
         },
       },
     },
@@ -42,6 +53,24 @@ export async function POST(request: Request) {
     data: {
       name: parsedBody.data.name,
       slug: slugify(parsedBody.data.name),
+      imageUrl: parsedBody.data.imageUrl ?? null,
+    },
+    include: {
+      subCategories: {
+        orderBy: { name: "asc" },
+        include: {
+          _count: {
+            select: {
+              products: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          subCategories: true,
+        },
+      },
     },
   });
 

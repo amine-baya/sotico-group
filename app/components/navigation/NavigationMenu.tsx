@@ -17,13 +17,13 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 
-import { getShowcaseCategories } from "../catalog/showcase-data";
 import { useLanguage } from "../providers/LanguageProvider";
 import { certificates } from "../home/home-content";
+import { useWorkwearMenuCategories } from "./use-workwear-menu";
 
 export function NavigationMenuDemo() {
   const { t } = useLanguage();
-  const showcaseCategories = getShowcaseCategories();
+  const workwearCategories = useWorkwearMenuCategories();
 
   return (
     <NavigationMenu>
@@ -45,13 +45,14 @@ export function NavigationMenuDemo() {
           </NavigationMenuTrigger>
           <NavigationMenuContent className="px-6 md:px-10">
             <ul className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-6 py-4 lg:grid-cols-5">
-              {showcaseCategories.map((category) => (
+              {workwearCategories.map((category) => (
                 <NavigationCategoryItem
                   key={category.slug}
                   categorySlug={category.slug}
                   src={category.image}
                   subCategories={category.subcategories.map((subcategory) => ({
                     index: subcategory.index,
+                    slug: subcategory.slug,
                     title: subcategory.title,
                   }))}
                   title={category.title}
@@ -117,6 +118,7 @@ type NavigationCategoryItemProps = {
   src: string;
   subCategories: Array<{
     index: number;
+    slug: string;
     title: {
       en: string;
       fr: string;
@@ -148,7 +150,7 @@ function NavigationCategoryItem({
         </h3>
         {subCategories.map((subCategory) => (
           <Link
-            key={subCategory.index}
+            key={subCategory.slug}
             href={`/collections/${categorySlug}?sub=${subCategory.index}`}
             className="mt-2 block text-[18px] font-semibold capitalize tracking-[0.1] text-[#18599f]"
           >

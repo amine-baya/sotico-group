@@ -2,19 +2,19 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { del } from "@vercel/blob";
 
-import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/slugify";
 import { requireAdmin } from "@/lib/admin-auth";
 import { isVercelBlobUrl } from "@/lib/blob";
+import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/slugify";
 
-const updateCategorySchema = z.object({
+const updateSubCategorySchema = z.object({
   name: z.string().min(2).max(80),
-  imageUrl: z.string().url().optional().nullable(),
+  categoryId: z.string().min(1),
 });
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { errorResponse } = await requireAdmin();
 
@@ -23,46 +23,40 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const parsedBody = updateCategorySchema.safeParse(body);
+  const parsedBody = updateSubCategorySchema.safeParse(body);
 
   if (!parsedBody.success) {
-    return NextResponse.json({ message: "Invalid category payload" }, { status: 400 });
+    return NextResponse.json(
+      { message: "Invalid sub-category payload" },
+      { status: 400 },
+    );
   }
 
   const { id } = await params;
 
-  const category = await prisma.category.update({
+  const subCategory = await prisma.subCategory.update({
     where: { id },
     data: {
       name: parsedBody.data.name,
       slug: slugify(parsedBody.data.name),
-      imageUrl: parsedBody.data.imageUrl ?? undefined,
+      categoryId: parsedBody.data.categoryId,
     },
     include: {
-      subCategories: {
-        orderBy: { name: "asc" },
-        include: {
-          _count: {
-            select: {
-              products: true,
-            },
-          },
-        },
-      },
+      category: true,
       _count: {
         select: {
-          subCategories: true,
+          products: true,
         },
       },
     },
   });
 
-  return NextResponse.json(category);
+  return NextResponse.json(subCategory);
 }
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { errorResponse } = await requireAdmin();
 
@@ -73,17 +67,13 @@ export async function DELETE(
   const { id } = await params;
 
   const products = await prisma.product.findMany({
-    where: {
-      subCategory: {
-        categoryId: id,
-      },
-    },
+    where: { subCategoryId: id },
     select: {
       imageUrls: true,
     },
   });
 
-  await prisma.category.delete({
+  await prisma.subCategory.delete({
     where: { id },
   });
 

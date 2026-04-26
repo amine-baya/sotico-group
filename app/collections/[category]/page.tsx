@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useParams, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import SiteFooter from "@/app/components/home/SiteFooter";
 import SiteHeaderBar from "@/app/components/layout/SiteHeaderBar";
@@ -13,16 +13,135 @@ import {
 } from "@/app/components/catalog/showcase-data";
 import { useLanguage } from "@/app/components/providers/LanguageProvider";
 
+type CollectionView = NonNullable<ReturnType<typeof getCollectionView>>;
+
+type ApiCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  imageUrl: string | null;
+  subCategories: Array<{
+    id: string;
+    name: string;
+    slug: string;
+  }>;
+};
+
+type ApiProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrls: string[];
+  sizes: string[];
+  colors: Array<{
+    id: string;
+    name: {
+      en: string;
+      fr: string;
+    };
+    hex: string;
+  }>;
+  subCategoryId: string;
+  subCategory: {
+    id: string;
+    name: string;
+    slug: string;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  };
+};
+
+const categoryImages = [
+  "/healthcare.png",
+  "/industry.png",
+  "/hospitality.png",
+  "/corporate.png",
+  "/cleaning.png",
+];
+
 export default function CollectionPage() {
   const { locale, t } = useLanguage();
   const params = useParams<{ category: string }>();
   const searchParams = useSearchParams();
   const categorySlug = params.category;
   const selectedSubIndex = Number(searchParams.get("sub") ?? "0");
-  const collection = getCollectionView(locale, categorySlug, selectedSubIndex);
+  const staticCollection = getCollectionView(locale, categorySlug, selectedSubIndex);
+  const [apiCollection, setApiCollection] = useState<CollectionView | null>(null);
+  const [isLoadingApiCollection, setIsLoadingApiCollection] = useState(true);
 
-  if (!collection || !getShowcaseCategory(categorySlug)) {
-    notFound();
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchCollection() {
+      try {
+        setIsLoadingApiCollection(true);
+        const [categoriesResponse, productsResponse] = await Promise.all([
+          fetch("/api/categories", { cache: "no-store" }),
+          fetch("/api/products", { cache: "no-store" }),
+        ]);
+
+        if (!categoriesResponse.ok || !productsResponse.ok) {
+          throw new Error("Unable to load collection");
+        }
+
+        const categories = (await categoriesResponse.json()) as ApiCategory[];
+        const products = (await productsResponse.json()) as ApiProduct[];
+        const nextCollection = buildApiCollectionView(
+          categories,
+          products,
+          categorySlug,
+          selectedSubIndex,
+          locale
+        );
+
+        if (isMounted) {
+          setApiCollection(nextCollection);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (isMounted) {
+          setApiCollection(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingApiCollection(false);
+        }
+      }
+    }
+
+    fetchCollection();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [categorySlug, locale, selectedSubIndex]);
+
+  const collection = apiCollection ?? staticCollection;
+
+  if (!collection && !isLoadingApiCollection && !getShowcaseCategory(categorySlug)) {
+    return (
+      <CollectionMessage
+        title="Collection not found"
+        message="We could not find this category or sub-category yet."
+      />
+    );
+  }
+
+  if (!collection) {
+    return (
+      <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
+        <SiteHeaderBar />
+        <section className="px-6 pb-20 pt-10">
+          <div className="mx-auto h-[520px] max-w-7xl animate-pulse rounded-[2rem] bg-white" />
+        </section>
+        <SiteFooter />
+      </main>
+    );
   }
 
   return (
@@ -93,15 +212,29 @@ export default function CollectionPage() {
               </p>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {collection.selectedSubcategory.products.map((product) => (
-                <ProductCard
-                  key={product.slug}
-                  categorySlug={collection.category.slug}
-                  product={product}
-                />
-              ))}
-            </div>
+            {collection.selectedSubcategory.products.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {collection.selectedSubcategory.products.map((product) => (
+                  <ProductCard
+                    key={product.slug}
+                    categorySlug={collection.category.slug}
+                    product={product}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white px-6 py-14 text-center shadow-sm">
+                <p className="text-sm font-bold uppercase tracking-[0.24em] text-slate-400">
+                  Empty collection
+                </p>
+                <h3 className="mt-3 text-2xl font-black text-[#0c437c]">
+                  There is no product yet
+                </h3>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-500">
+                  Products added by the admin for this sub-category will appear here.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -109,6 +242,93 @@ export default function CollectionPage() {
       <SiteFooter />
     </main>
   );
+}
+
+function CollectionMessage({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
+  return (
+    <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
+      <SiteHeaderBar />
+      <section className="px-6 pb-20 pt-10">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-slate-400">
+            Not found
+          </p>
+          <h1 className="mt-3 text-3xl font-black text-[#0c437c] md:text-4xl">
+            {title}
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
+            {message}
+          </p>
+          <Link
+            href="/"
+            className="mt-8 inline-flex rounded-full bg-[#0c437c] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#18599f]"
+          >
+            Back to home
+          </Link>
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  );
+}
+
+function buildApiCollectionView(
+  categories: ApiCategory[],
+  products: ApiProduct[],
+  categorySlug: string,
+  selectedSubIndex: number,
+  locale: "en" | "fr"
+): CollectionView | null {
+  const categoryIndex = categories.findIndex(
+    (category) => category.slug === categorySlug
+  );
+  const category = categories[categoryIndex];
+
+  if (!category || category.subCategories.length === 0) {
+    return null;
+  }
+
+  const selectedSubcategory =
+    category.subCategories[selectedSubIndex] ?? category.subCategories[0];
+  const selectedProducts = products.filter(
+    (product) => product.subCategoryId === selectedSubcategory.id
+  );
+
+  return {
+    category: {
+      slug: category.slug,
+      title: category.name,
+      description: category.name,
+      image: category.imageUrl ?? categoryImages[categoryIndex % categoryImages.length],
+    },
+    selectedSubcategory: {
+      index: category.subCategories.indexOf(selectedSubcategory),
+      title: selectedSubcategory.name,
+      products: selectedProducts.map((product) => ({
+        slug: product.slug,
+        title: product.name,
+        description: product.description ?? "",
+        image: product.imageUrls[0] ?? categoryImages[categoryIndex % categoryImages.length],
+        gallery: product.imageUrls,
+        colors: product.colors.map((color) => ({
+          id: color.id,
+          name: color.name[locale],
+          hex: color.hex,
+        })),
+        sizes: product.sizes,
+      })),
+    },
+    subcategories: category.subCategories.map((subcategory, index) => ({
+      index,
+      title: subcategory.name,
+    })),
+  };
 }
 
 function ProductCard({

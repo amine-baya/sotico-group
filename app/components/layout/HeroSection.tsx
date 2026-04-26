@@ -18,7 +18,7 @@ export default function HeroSection() {
             <img
               className="h-full w-full object-cover"
               alt={t.header.heroImageAlt}
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDyGv9ZF64nFYFvzBixhs__AHwhrcLuXgoFBsO5cW4vjgpD5CtUxA-drguHiBtwK__0W6thwFwXYrVrYeXvz51MvpxMA4PEKB-wbdkEpC8ZDhrMWCPZco5beJEKutOBce4CWk0i58o3ZAwRJ1hFtT801SohhWnRg_y0NWnWLOBQ-jtEqDMJYq8r2M45SAc4uXhs1wgAsVsmw73qYEJG91R7iltat_2xb6gs1_aQRlxB8VGs-xaX2WL2CG0Tl_E2Xsa0CNMrgzaNzxc"
+              src="/hero-section.png"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-background via-background/20 to-transparent lg:from-background lg:via-background/40" />
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/40 to-transparent mix-blend-multiply" />

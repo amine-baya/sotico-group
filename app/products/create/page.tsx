@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { CreateProductScreen } from "@/app/components/products/CreateProductScreen";
 
 export default function CreateProductPage() {
-  redirect("/products");
+  return <CreateProductScreen />;
 }

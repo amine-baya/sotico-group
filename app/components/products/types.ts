@@ -2,6 +2,19 @@ export type AdminCategory = {
   id: string;
   name: string;
   slug: string;
+  imageUrl: string | null;
+  subCategories: AdminSubCategory[];
+  _count?: {
+    subCategories: number;
+  };
+};
+
+export type AdminSubCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  categoryId: string;
+  category?: Omit<AdminCategory, "subCategories" | "_count">;
   _count?: {
     products: number;
   };
@@ -16,6 +29,15 @@ export type AdminColor = {
   hex: string;
 };
 
+export type AdminFeature = {
+  id: string;
+  name: {
+    en: string;
+    fr: string;
+  };
+  icon: string;
+};
+
 export type AdminProduct = {
   id: string;
   name: string;
@@ -24,7 +46,10 @@ export type AdminProduct = {
   imageUrls: string[];
   sizes: string[];
   colors: AdminColor[];
-  categoryId: string;
-  category: AdminCategory;
+  features: AdminFeature[];
+  subCategoryId: string;
+  subCategory: AdminSubCategory & {
+    category: Omit<AdminCategory, "subCategories" | "_count">;
+  };
   createdAt: string;
 };

@@ -2,32 +2,167 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
-import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 import SiteFooter from "@/app/components/home/SiteFooter";
 import SiteHeaderBar from "@/app/components/layout/SiteHeaderBar";
 import { getShowcaseProduct } from "@/app/components/catalog/showcase-data";
 import { useLanguage } from "@/app/components/providers/LanguageProvider";
+import { productFeatureOptions } from "@/app/components/products/feature-options";
+import { AdminFeature } from "@/app/components/products/types";
+
+type LocalizedProductFeature = {
+  id: string;
+  name: string;
+  icon: string;
+};
+
+type ProductView = {
+  category: {
+    slug: string;
+    title: string;
+  };
+  subcategory: {
+    index: number;
+    title: string;
+  };
+  product: {
+    slug: string;
+    title: string;
+    description: string;
+    image: string;
+    gallery: string[];
+    colors: Array<{
+      id: string;
+      name: string;
+      hex: string;
+    }>;
+    sizes: string[];
+    features?: LocalizedProductFeature[];
+  };
+};
+
+type ApiProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  imageUrls: string[];
+  sizes: string[];
+  colors: Array<{
+    id: string;
+    name: {
+      en: string;
+      fr: string;
+    };
+    hex: string;
+  }>;
+  features: AdminFeature[] | null;
+  subCategory: {
+    id: string;
+    name: string;
+    slug: string;
+    category: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+  };
+};
 
 export default function ShowcaseProductPage() {
   const { locale, t } = useLanguage();
   const params = useParams<{ category: string; product: string }>();
-  const productView = getShowcaseProduct(locale, params.category, params.product);
+  const staticProductView = getShowcaseProduct(
+    locale,
+    params.category,
+    params.product
+  ) as ProductView | null;
+  const [apiProductView, setApiProductView] = useState<ProductView | null>(null);
+  const [isLoadingApiProduct, setIsLoadingApiProduct] = useState(true);
 
-  if (!productView) {
-    notFound();
-  }
+  useEffect(() => {
+    let isMounted = true;
 
-  const [selectedColor, setSelectedColor] = useState(
-    productView.product.colors[0]?.id ?? ""
-  );
-  const [selectedSize, setSelectedSize] = useState(
-    productView.product.sizes[0] ?? ""
-  );
+    async function fetchProduct() {
+      try {
+        setIsLoadingApiProduct(true);
+        const response = await fetch("/api/products", { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error("Unable to load products");
+        }
+
+        const products = (await response.json()) as ApiProduct[];
+        const product = products.find(
+          (item) =>
+            item.slug === params.product &&
+            item.subCategory.category.slug === params.category
+        );
+
+        if (isMounted) {
+          setApiProductView(product ? buildApiProductView(product, locale) : null);
+        }
+      } catch (error) {
+        console.error(error);
+
+        if (isMounted) {
+          setApiProductView(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingApiProduct(false);
+        }
+      }
+    }
+
+    fetchProduct();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [locale, params.category, params.product]);
+
+  const productView = apiProductView ?? staticProductView;
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
+
+  useEffect(() => {
+    if (!productView) {
+      return;
+    }
+
+    setSelectedColor(productView.product.colors[0]?.id ?? "");
+    setSelectedSize(productView.product.sizes[0] ?? "");
+    setSelectedImageIndex(0);
+    setIsGalleryOpen(false);
+  }, [productView]);
+
+  if (!productView && !isLoadingApiProduct) {
+    return (
+      <ProductMessage
+        title="Product not found"
+        message="We could not find this product yet. It may have been removed or not published."
+        backHref={`/collections/${params.category}`}
+      />
+    );
+  }
+
+  if (!productView) {
+    return (
+      <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
+        <SiteHeaderBar />
+        <section className="px-6 pb-24 pt-10">
+          <div className="mx-auto h-[620px] max-w-7xl animate-pulse rounded-[2rem] bg-white" />
+        </section>
+        <SiteFooter />
+      </main>
+    );
+  }
   const selectedImage =
     productView.product.gallery[selectedImageIndex] ?? productView.product.image;
 
@@ -133,6 +268,32 @@ export default function ShowcaseProductPage() {
                   {productView.product.description}
                 </p>
               </div>
+
+              {productView.product.features &&
+              productView.product.features.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {productView.product.features.map((feature) => {
+                    const option = productFeatureOptions.find(
+                      (item) => item.id === feature.id
+                    );
+                    const Icon = option?.Icon;
+
+                    return (
+                      <div
+                        key={feature.id}
+                        className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                      >
+                        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#0c437c] shadow-sm">
+                          {Icon ? <Icon className="h-5 w-5" /> : feature.icon}
+                        </span>
+                        <span className="font-semibold text-slate-700">
+                          {feature.name}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
 
               <div className="space-y-4">
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-slate-500">
@@ -286,4 +447,85 @@ export default function ShowcaseProductPage() {
       <SiteFooter />
     </main>
   );
+}
+
+function ProductMessage({
+  title,
+  message,
+  backHref,
+}: {
+  title: string;
+  message: string;
+  backHref: string;
+}) {
+  return (
+    <main className="min-h-screen bg-[#f6f8fb] text-slate-900">
+      <SiteHeaderBar />
+      <section className="px-6 pb-24 pt-10">
+        <div className="mx-auto max-w-4xl rounded-[2rem] border border-dashed border-slate-300 bg-white px-6 py-16 text-center shadow-sm">
+          <p className="text-sm font-bold uppercase tracking-[0.24em] text-slate-400">
+            Not found
+          </p>
+          <h1 className="mt-3 text-3xl font-black text-[#0c437c] md:text-4xl">
+            {title}
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-slate-500">
+            {message}
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link
+              href={backHref}
+              className="inline-flex rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            >
+              Back to collection
+            </Link>
+            <Link
+              href="/"
+              className="inline-flex rounded-full bg-[#0c437c] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#18599f]"
+            >
+              Back to home
+            </Link>
+          </div>
+        </div>
+      </section>
+      <SiteFooter />
+    </main>
+  );
+}
+
+function buildApiProductView(
+  product: ApiProduct,
+  locale: "en" | "fr"
+): ProductView {
+  const gallery =
+    product.imageUrls.length > 0 ? product.imageUrls : ["/healthcare.png"];
+
+  return {
+    category: {
+      slug: product.subCategory.category.slug,
+      title: product.subCategory.category.name,
+    },
+    subcategory: {
+      index: 0,
+      title: product.subCategory.name,
+    },
+    product: {
+      slug: product.slug,
+      title: product.name,
+      description: product.description ?? "",
+      image: gallery[0],
+      gallery,
+      colors: product.colors.map((color) => ({
+        id: color.id,
+        name: color.name[locale],
+        hex: color.hex,
+      })),
+      features: (product.features ?? []).map((feature) => ({
+        id: feature.id,
+        name: feature.name[locale],
+        icon: feature.icon,
+      })),
+      sizes: product.sizes,
+    },
+  };
 }

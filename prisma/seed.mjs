@@ -17,11 +17,31 @@ const prisma = new PrismaClient({
 });
 
 const defaultCategories = [
-  "Healthcare",
-  "Industry",
-  "Hospitality",
-  "Service",
-  "Cleaning",
+  {
+    name: "Healthcare",
+    imageUrl: "/healthcare.png",
+    subCategories: ["Scrubs", "Lab coats", "Patient wear"],
+  },
+  {
+    name: "Industry",
+    imageUrl: "/industry.png",
+    subCategories: ["Work jackets", "Work pants", "Safety vests"],
+  },
+  {
+    name: "Hospitality",
+    imageUrl: "/hospitality.png",
+    subCategories: ["Chef wear", "Aprons", "Front desk uniforms"],
+  },
+  {
+    name: "Service",
+    imageUrl: "/corporate.png",
+    subCategories: ["Corporate uniforms", "Security uniforms", "Retail wear"],
+  },
+  {
+    name: "Cleaning",
+    imageUrl: "/cleaning.png",
+    subCategories: ["Housekeeping", "Maintenance", "Protective sets"],
+  },
 ];
 
 function slugify(value) {
@@ -54,15 +74,35 @@ async function main() {
     },
   });
 
-  for (const categoryName of defaultCategories) {
-    await prisma.category.upsert({
-      where: { slug: slugify(categoryName) },
-      update: { name: categoryName },
+  for (const category of defaultCategories) {
+    const savedCategory = await prisma.category.upsert({
+      where: { slug: slugify(category.name) },
+      update: { name: category.name, imageUrl: category.imageUrl },
       create: {
-        name: categoryName,
-        slug: slugify(categoryName),
+        name: category.name,
+        slug: slugify(category.name),
+        imageUrl: category.imageUrl,
       },
     });
+
+    for (const subCategoryName of category.subCategories) {
+      await prisma.subCategory.upsert({
+        where: {
+          categoryId_slug: {
+            categoryId: savedCategory.id,
+            slug: slugify(subCategoryName),
+          },
+        },
+        update: {
+          name: subCategoryName,
+        },
+        create: {
+          name: subCategoryName,
+          slug: slugify(subCategoryName),
+          categoryId: savedCategory.id,
+        },
+      });
+    }
   }
 }
 
