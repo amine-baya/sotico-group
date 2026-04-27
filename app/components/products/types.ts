@@ -53,3 +53,11 @@ export type AdminProduct = {
   };
   createdAt: string;
 };
+
+export type AdminUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  role: "SUPER_ADMIN" | "ADMIN";
+  createdAt: string;
+};

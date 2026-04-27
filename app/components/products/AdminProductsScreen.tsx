@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LogOut, Pencil, Plus, Tag, Trash2, X } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AdminCategory, AdminProduct, AdminSubCategory } from "./types";
+import { AdminCategory, AdminProduct, AdminSubCategory, AdminUser } from "./types";
 
 type EditModalState =
   | { type: "category"; item: AdminCategory; name: string }
@@ -44,14 +44,21 @@ type DeleteModalState =
     };
 
 export function AdminProductsScreen() {
+  const { data: session } = useSession();
+  const isSuperAdmin = session?.user?.role === "SUPER_ADMIN";
+  const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [categories, setCategories] = useState<AdminCategory[]>([]);
   const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
   const [categoryName, setCategoryName] = useState("");
   const [categoryImageFile, setCategoryImageFile] = useState<File | null>(null);
   const [categoryImagePreviewUrl, setCategoryImagePreviewUrl] = useState("");
   const [subCategoryName, setSubCategoryName] = useState("");
   const [subCategoryParentId, setSubCategoryParentId] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSavingAdmin, setIsSavingAdmin] = useState(false);
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isSavingSubCategory, setIsSavingSubCategory] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -63,11 +70,11 @@ export function AdminProductsScreen() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const [categoriesResponse, productsResponse] = await Promise.all([
+      const requests = [
         fetch("/api/categories"),
         fetch("/api/products"),
-      ]);
-
+      ] as const;
+      const [categoriesResponse, productsResponse] = await Promise.all(requests);
       const categoriesData = await readJsonResponse<AdminCategory[]>(
         categoriesResponse,
         "Unable to load categories"
@@ -92,9 +99,73 @@ export function AdminProductsScreen() {
     }
   };
 
+  const handleCreateAdmin = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!adminEmail.trim() || adminPassword.length < 8) {
+      setErrorMessage(
+        "Please provide a valid admin email and a password with at least 8 characters."
+      );
+      return;
+    }
+
+    try {
+      setIsSavingAdmin(true);
+      setErrorMessage("");
+
+      const response = await fetch("/api/admins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: adminName,
+          email: adminEmail,
+          password: adminPassword,
+        }),
+      });
+
+      const createdAdmin = await readJsonResponse<AdminUser>(
+        response,
+        "Unable to create admin"
+      );
+
+      setAdmins((current) => [createdAdmin, ...current]);
+      setAdminName("");
+      setAdminEmail("");
+      setAdminPassword("");
+    } catch (error) {
+      console.error(error);
+      setErrorMessage("Unable to create admin.");
+    } finally {
+      setIsSavingAdmin(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      setAdmins([]);
+      return;
+    }
+
+    async function fetchAdmins() {
+      try {
+        const response = await fetch("/api/admins");
+        const adminsData = await readJsonResponse<AdminUser[]>(
+          response,
+          "Unable to load admins"
+        );
+        setAdmins(adminsData);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("Unable to load admins.");
+      }
+    }
+
+    fetchAdmins();
+  }, [isSuperAdmin]);
 
   useEffect(() => {
     if (!categoryImageFile) {
@@ -369,7 +440,74 @@ export function AdminProductsScreen() {
           </div>
         ) : null}
 
-        <div>
+        <div className="space-y-8">
+          {isSuperAdmin ? (
+          <Card className="rounded-[28px] border-slate-200/80 bg-white/95 py-0">
+            <CardHeader className="border-b border-slate-100 py-6">
+              <CardTitle>Super admin access</CardTitle>
+              <CardDescription>
+                Add new admin accounts for teammates who need access to the protected dashboard.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6 py-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+              <form className="space-y-4" onSubmit={handleCreateAdmin}>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <AdminField
+                    label="Admin name"
+                    value={adminName}
+                    onChange={setAdminName}
+                    placeholder="Operations Manager"
+                  />
+                  <AdminField
+                    label="Admin email"
+                    type="email"
+                    value={adminEmail}
+                    onChange={setAdminEmail}
+                    placeholder="manager@sotico-group.com"
+                  />
+                </div>
+                <AdminField
+                  label="Temporary password"
+                  type="password"
+                  value={adminPassword}
+                  onChange={setAdminPassword}
+                  placeholder="At least 8 characters"
+                />
+                <Button type="submit" size="lg" disabled={isSavingAdmin}>
+                  <Plus className="h-4 w-4" />
+                  {isSavingAdmin ? "Adding admin..." : "Add admin"}
+                </Button>
+              </form>
+
+              <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  Existing admins
+                </p>
+                <div className="mt-4 space-y-3">
+                  {admins.map((admin) => (
+                    <div
+                      key={admin.id}
+                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
+                    >
+                      <p className="font-semibold text-slate-900">
+                        {admin.name?.trim() || "Unnamed admin"}
+                      </p>
+                      <p className="text-sm text-slate-600">{admin.email}</p>
+                    </div>
+                  ))}
+
+                  {!isLoading && admins.length === 0 ? (
+                    <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-6 text-center text-sm text-slate-500">
+                      No admins found.
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          ) : null}
+
+          <div>
           <Card className="rounded-[28px] border-slate-200/80 bg-white/95 py-0">
             <CardHeader className="border-b border-slate-100 py-6">
               <CardTitle>Categories and sub-categories</CardTitle>
@@ -541,7 +679,7 @@ export function AdminProductsScreen() {
               </div>
             </CardContent>
           </Card>
-
+          </div>
         </div>
 
         <Card className="rounded-[28px] border-slate-200/80 bg-white/95 py-0">
@@ -840,4 +978,31 @@ function parseJsonSafely(text: string) {
   } catch {
     return null;
   }
+}
+
+function AdminField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  type?: React.HTMLInputTypeAttribute;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium text-slate-600">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
+        placeholder={placeholder}
+      />
+    </div>
+  );
 }

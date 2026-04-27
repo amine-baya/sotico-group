@@ -17,3 +17,26 @@ export async function requireAdmin() {
     errorResponse: null,
   };
 }
+
+export async function requireSuperAdmin() {
+  const { session, errorResponse } = await requireAdmin();
+
+  if (errorResponse) {
+    return { session, errorResponse };
+  }
+
+  if (session?.user.role !== "SUPER_ADMIN") {
+    return {
+      session,
+      errorResponse: NextResponse.json(
+        { message: "Forbidden" },
+        { status: 403 }
+      ),
+    };
+  }
+
+  return {
+    session,
+    errorResponse: null,
+  };
+}

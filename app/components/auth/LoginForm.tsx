@@ -61,7 +61,7 @@ export function LoginForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
-              placeholder="admin@sotico-group.com"
+              placeholder="email"
             />
           </div>
 
@@ -72,7 +72,7 @@ export function LoginForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-sky-400 focus:bg-white"
-              placeholder="••••••••"
+              placeholder="password"
             />
           </div>
 

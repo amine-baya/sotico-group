@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Globe2, Leaf, Menu, PenTool, X } from "lucide-react";
+import { ChevronDown, Globe2, Leaf, LogIn, Menu, PenTool, X } from "lucide-react";
 import { FaSearch } from "react-icons/fa";
 import { SlBasket } from "react-icons/sl";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -201,9 +201,20 @@ export default function SiteHeaderBar() {
           />
         </Link>
 
-        <button className="cursor-pointer text-2xl" type="button">
-          <SlBasket />
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/login"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-[#0c437c] transition hover:border-sky-200 hover:bg-sky-50"
+            aria-label="Admin login"
+            title="Admin login"
+          >
+            <LogIn className="h-5 w-5" />
+          </Link>
+
+          <button className="cursor-pointer text-2xl" type="button" aria-label="Cart">
+            <SlBasket />
+          </button>
+        </div>
       </div>
 
       <div className="container mx-auto hidden justify-center pt-2 pb-3 text-lg font-semibold text-gray-800 lg:block">
@@ -283,6 +294,15 @@ export default function SiteHeaderBar() {
               className="block rounded-2xl bg-slate-50 px-4 py-3 font-semibold text-[#0c437c]"
             >
               {t.navigation.aboutUs}
+            </Link>
+
+            <Link
+              href="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 font-semibold text-[#0c437c]"
+            >
+              <span>Admin login</span>
+              <LogIn className="h-4 w-4" />
             </Link>
 
             <details className="rounded-2xl bg-slate-50 px-4 py-3">

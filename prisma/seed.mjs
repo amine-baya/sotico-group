@@ -65,12 +65,13 @@ async function main() {
     update: {
       name: adminName,
       passwordHash,
+      role: "SUPER_ADMIN",
     },
     create: {
       email: adminEmail,
       name: adminName,
       passwordHash,
-      role: "ADMIN",
+      role: "SUPER_ADMIN",
     },
   });
 
