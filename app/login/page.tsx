@@ -1,8 +1,16 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/components/auth/LoginForm";
+import { auth } from "@/auth";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+
+  if (session?.user) {
+    redirect("/products");
+  }
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe_0%,#eff6ff_28%,#f8fafc_100%)] px-4 py-10">
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1.1fr_0.9fr]">
